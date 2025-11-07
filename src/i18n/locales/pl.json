@@ -1,0 +1,104 @@
+{
+  "common": {
+    "welcome": "Witamy",
+    "login": "Zaloguj się",
+    "logout": "Wyloguj się",
+    "register": "Zarejestruj się",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "edit": "Edytuj",
+    "back": "Wstecz",
+    "next": "Dalej",
+    "search": "Szukaj",
+    "filter": "Filtruj",
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "success": "Sukces",
+    "confirm": "Potwierdź",
+    "settings": "Ustawienia"
+  },
+  "auth": {
+    "email": "E-mail",
+    "password": "Hasło",
+    "forgotPassword": "Zapomniałeś hasła?",
+    "resetPassword": "Resetuj hasło",
+    "changePassword": "Zmień hasło",
+    "currentPassword": "Obecne hasło",
+    "newPassword": "Nowe hasło",
+    "confirmPassword": "Potwierdź hasło",
+    "loginSuccess": "Logowanie udane",
+    "loginError": "Błąd logowania",
+    "logoutSuccess": "Wylogowanie udane"
+  },
+  "child": {
+    "myChild": "Moje dziecko",
+    "children": "Dzieci",
+    "checkIn": "Zameldowanie",
+    "checkOut": "Wymeldowanie",
+    "checkedIn": "Zameldowany",
+    "checkedOut": "Wymeldowany",
+    "notCheckedIn": "Niezameldowany",
+    "firstName": "Imię",
+    "lastName": "Nazwisko",
+    "dateOfBirth": "Data urodzenia",
+    "allergies": "Alergie",
+    "notes": "Notatki",
+    "photo": "Zdjęcie",
+    "status": "Status",
+    "checkInTime": "Czas zameldowania",
+    "checkOutTime": "Czas wymeldowania"
+  },
+  "overview": {
+    "title": "Przegląd",
+    "present": "Obecny",
+    "pickedUp": "Odebrany",
+    "notDelivered": "Nie dostarczony",
+    "allChildren": "Wszystkie dzieci"
+  },
+  "calendar": {
+    "title": "Kalendarz",
+    "addEvent": "Dodaj wydarzenie",
+    "editEvent": "Edytuj wydarzenie",
+    "parentMeeting": "Spotkanie z rodzicami",
+    "fieldTrip": "Wycieczka",
+    "other": "Inne",
+    "noEvents": "Brak wydarzeń"
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "language": "Język",
+    "theme": "Motyw",
+    "light": "Jasny",
+    "dark": "Ciemny",
+    "system": "Systemowy",
+    "userInfo": "Informacje użytkownika",
+    "name": "Imię",
+    "phone": "Telefon",
+    "updateUserInfo": "Aktualizuj informacje użytkownika"
+  },
+  "admin": {
+    "addChild": "Dodaj dziecko",
+    "addStaff": "Dodaj pracownika",
+    "linkParent": "Połącz rodzica",
+    "deleteUser": "Usuń użytkownika",
+    "changeRole": "Zmień rolę"
+  },
+  "messages": {
+    "sendEmail": "Wyślij e-mail",
+    "to": "Do",
+    "subject": "Temat",
+    "message": "Wiadomość",
+    "send": "Wyślij"
+  },
+  "logs": {
+    "title": "Logi",
+    "checkInOut": "Zameldowanie/wymeldowanie",
+    "date": "Data",
+    "time": "Czas",
+    "child": "Dziecko",
+    "action": "Akcja",
+    "export": "Eksportuj"
+  }
+}
+

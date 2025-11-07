@@ -1,0 +1,104 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Log in",
+    "logout": "Log out",
+    "register": "Register",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "settings": "Settings"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset password",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "loginSuccess": "Login successful",
+    "loginError": "Login error",
+    "logoutSuccess": "Logout successful"
+  },
+  "child": {
+    "myChild": "My child",
+    "children": "Children",
+    "checkIn": "Check in",
+    "checkOut": "Check out",
+    "checkedIn": "Checked in",
+    "checkedOut": "Checked out",
+    "notCheckedIn": "Not checked in",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "dateOfBirth": "Date of birth",
+    "allergies": "Allergies",
+    "notes": "Notes",
+    "photo": "Photo",
+    "status": "Status",
+    "checkInTime": "Check-in time",
+    "checkOutTime": "Check-out time"
+  },
+  "overview": {
+    "title": "Overview",
+    "present": "Present",
+    "pickedUp": "Picked up",
+    "notDelivered": "Not delivered",
+    "allChildren": "All children"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "addEvent": "Add event",
+    "editEvent": "Edit event",
+    "parentMeeting": "Parent meeting",
+    "fieldTrip": "Field trip",
+    "other": "Other",
+    "noEvents": "No events"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "userInfo": "User information",
+    "name": "Name",
+    "phone": "Phone",
+    "updateUserInfo": "Update user information"
+  },
+  "admin": {
+    "addChild": "Add child",
+    "addStaff": "Add staff",
+    "linkParent": "Link parent",
+    "deleteUser": "Delete user",
+    "changeRole": "Change role"
+  },
+  "messages": {
+    "sendEmail": "Send email",
+    "to": "To",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send"
+  },
+  "logs": {
+    "title": "Logs",
+    "checkInOut": "Check-in/out",
+    "date": "Date",
+    "time": "Time",
+    "child": "Child",
+    "action": "Action",
+    "export": "Export"
+  }
+}
+

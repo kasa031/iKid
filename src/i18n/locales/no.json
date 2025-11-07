@@ -1,0 +1,104 @@
+{
+  "common": {
+    "welcome": "Velkommen",
+    "login": "Logg inn",
+    "logout": "Logg ut",
+    "register": "Registrer",
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "delete": "Slett",
+    "edit": "Rediger",
+    "back": "Tilbake",
+    "next": "Neste",
+    "search": "Søk",
+    "filter": "Filtrer",
+    "loading": "Laster...",
+    "error": "Feil",
+    "success": "Vellykket",
+    "confirm": "Bekreft",
+    "settings": "Innstillinger"
+  },
+  "auth": {
+    "email": "E-post",
+    "password": "Passord",
+    "forgotPassword": "Glemt passord?",
+    "resetPassword": "Tilbakestill passord",
+    "changePassword": "Endre passord",
+    "currentPassword": "Nåværende passord",
+    "newPassword": "Nytt passord",
+    "confirmPassword": "Bekreft passord",
+    "loginSuccess": "Innlogging vellykket",
+    "loginError": "Feil ved innlogging",
+    "logoutSuccess": "Utlogging vellykket"
+  },
+  "child": {
+    "myChild": "Mitt barn",
+    "children": "Barn",
+    "checkIn": "Kryss inn",
+    "checkOut": "Kryss ut",
+    "checkedIn": "Krysset inn",
+    "checkedOut": "Krysset ut",
+    "notCheckedIn": "Ikke krysset inn",
+    "firstName": "Fornavn",
+    "lastName": "Etternavn",
+    "dateOfBirth": "Fødselsdato",
+    "allergies": "Allergier",
+    "notes": "Notater",
+    "photo": "Bilde",
+    "status": "Status",
+    "checkInTime": "Innkryssingstid",
+    "checkOutTime": "Utkryssingstid"
+  },
+  "overview": {
+    "title": "Oversikt",
+    "present": "Til stede",
+    "pickedUp": "Hentet",
+    "notDelivered": "Ikke levert",
+    "allChildren": "Alle barn"
+  },
+  "calendar": {
+    "title": "Kalender",
+    "addEvent": "Legg til hendelse",
+    "editEvent": "Rediger hendelse",
+    "parentMeeting": "Foreldremøte",
+    "fieldTrip": "Turdag",
+    "other": "Annet",
+    "noEvents": "Ingen hendelser"
+  },
+  "settings": {
+    "title": "Innstillinger",
+    "language": "Språk",
+    "theme": "Tema",
+    "light": "Lys",
+    "dark": "Mørk",
+    "system": "System",
+    "userInfo": "Brukerinformasjon",
+    "name": "Navn",
+    "phone": "Telefon",
+    "updateUserInfo": "Oppdater brukerinformasjon"
+  },
+  "admin": {
+    "addChild": "Legg til barn",
+    "addStaff": "Legg til ansatt",
+    "linkParent": "Knytt foreldre",
+    "deleteUser": "Slett bruker",
+    "changeRole": "Endre rolle"
+  },
+  "messages": {
+    "sendEmail": "Send e-post",
+    "to": "Til",
+    "subject": "Emne",
+    "message": "Melding",
+    "send": "Send"
+  },
+  "logs": {
+    "title": "Logger",
+    "checkInOut": "Inn/utkryssinger",
+    "date": "Dato",
+    "time": "Tid",
+    "child": "Barn",
+    "action": "Handling",
+    "export": "Eksporter"
+  }
+}
+
