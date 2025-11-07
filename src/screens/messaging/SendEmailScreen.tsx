@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { getAllChildren, getChildrenByParentId } from '../../services/database/childService';
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from '../../services/firebase/config';
 import { Child } from '../../types';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
@@ -68,16 +70,22 @@ export const SendEmailScreen: React.FC = () => {
       return;
     }
 
-    // TODO: Get parent email from user document
-    // For now, we'll use a placeholder
-    const parentEmail = 'parent@example.com'; // This should be fetched from user document
-
-    if (!isValidEmail(parentEmail)) {
-      Alert.alert(t('common.error'), 'Ugyldig e-postadresse');
-      return;
-    }
-
+    // Get parent email from user document
     try {
+      const firstParentId = child.parentIds[0];
+      const parentDoc = await getDoc(doc(db, 'users', firstParentId));
+      if (!parentDoc.exists()) {
+        Alert.alert(t('common.error'), 'Foreldre ikke funnet');
+        return;
+      }
+      const parentData = parentDoc.data();
+      const parentEmail = parentData.email;
+
+      if (!isValidEmail(parentEmail)) {
+        Alert.alert(t('common.error'), 'Ugyldig e-postadresse');
+        return;
+      }
+
       await sendEmail(parentEmail, subject, message);
       Alert.alert(t('common.success'), 'E-post åpnet');
       setSubject('');

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, AccessibilityInfo } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { Spacing, BorderRadius, FontSizes } from '../../constants/sizes';
 
