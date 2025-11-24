@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iKid - Eventyrhagen Barnehage</title>
+    <script>
+      // GitHub Pages 404 redirect
+      // This handles direct URL access to routes like /ikid/login
+      const path = window.location.pathname;
+      const base = '/ikid';
+      
+      // If we're already on the base path, redirect to index.html
+      if (path.startsWith(base)) {
+        window.location.replace(base + '/index.html' + window.location.search + window.location.hash);
+      } else {
+        // Otherwise, redirect to base
+        window.location.replace(base + '/index.html');
+      }
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>
+

@@ -30,8 +30,11 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  // Set basename for GitHub Pages (production) or empty for local dev
+  const basename = import.meta.env.PROD ? '/ikid' : '/';
+  
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <ThemeProvider>
         <AuthProvider>
           <AppContent />
