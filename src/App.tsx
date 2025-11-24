@@ -31,7 +31,18 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   // Set basename for GitHub Pages (matches repository name: iKid)
-  const basename = import.meta.env.PROD ? '/iKid' : '/';
+  // Use window.location to determine base path dynamically
+  const getBasename = () => {
+    if (import.meta.env.DEV) return '/';
+    // For production, check if we're on GitHub Pages
+    const pathname = window.location.pathname;
+    if (pathname.startsWith('/iKid')) {
+      return '/iKid';
+    }
+    return '/';
+  };
+  
+  const basename = getBasename();
   
   return (
     <BrowserRouter basename={basename}>
