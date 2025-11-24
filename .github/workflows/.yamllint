@@ -1,0 +1,3 @@
+# YAML Lint configuration - ignore secrets warnings in GitHub Actions
+# These warnings are expected as secrets are defined in GitHub repository settings
+

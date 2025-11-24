@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Deploy to GitHub Pages
 
 on:
@@ -31,6 +32,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Note: YAML linter warnings about secrets are expected - secrets are defined in GitHub repository settings
       - name: Check secrets
         run: |
           echo "Checking secrets..."
@@ -48,6 +50,7 @@ jobs:
           fi
           echo "✅ All required secrets are configured"
       
+      # Note: YAML linter warnings about secrets are expected - secrets are defined in GitHub repository settings
       - name: Create .env file from secrets
         run: |
           echo "Creating .env file..."
