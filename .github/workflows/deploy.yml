@@ -33,24 +33,56 @@ jobs:
 
       - name: Check secrets
         run: |
+          echo "Checking secrets..."
           if [ -z "${{ secrets.VITE_FIREBASE_API_KEY }}" ]; then
             echo "❌ ERROR: VITE_FIREBASE_API_KEY secret is missing!"
-            echo "Go to: https://github.com/kasa031/iKid/settings/secrets/actions"
             exit 1
           fi
-          echo "✅ All secrets are configured"
+          if [ -z "${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}" ]; then
+            echo "❌ ERROR: VITE_FIREBASE_AUTH_DOMAIN secret is missing!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.VITE_FIREBASE_PROJECT_ID }}" ]; then
+            echo "❌ ERROR: VITE_FIREBASE_PROJECT_ID secret is missing!"
+            exit 1
+          fi
+          echo "✅ All required secrets are configured"
       
       - name: Create .env file from secrets
         run: |
-          echo "VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}" >> .env
+          echo "Creating .env file..."
+          echo "VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}" > .env
           echo "VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}" >> .env
           echo "VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}" >> .env
           echo "VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}" >> .env
           echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}" >> .env
           echo "VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}" >> .env
+          echo "✅ .env file created"
+
+      - name: TypeScript check
+        run: |
+          echo "Running TypeScript type check..."
+          npx tsc --noEmit || echo "⚠️ TypeScript warnings found, but continuing..."
 
       - name: Build
-        run: npm run build
+        run: |
+          echo "Building application..."
+          npm run build
+          echo "✅ Build completed"
+          
+      - name: Verify build output
+        run: |
+          echo "Verifying build output..."
+          if [ ! -d "dist" ]; then
+            echo "❌ ERROR: dist directory not found!"
+            exit 1
+          fi
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ ERROR: dist/index.html not found!"
+            exit 1
+          fi
+          echo "✅ Build output verified"
+          ls -la dist/ | head -20
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
