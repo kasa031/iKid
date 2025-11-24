@@ -139,7 +139,14 @@ jobs:
             exit 1
           fi
           echo "✅ Build output verified"
+          echo "📁 Contents of dist directory:"
           ls -la dist/ | head -20
+          echo ""
+          echo "📄 First 20 lines of index.html:"
+          head -20 dist/index.html
+          echo ""
+          echo "🔍 Checking for base path in index.html:"
+          grep -i "base\|href\|src" dist/index.html | head -10
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

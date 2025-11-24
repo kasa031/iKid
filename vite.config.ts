@@ -5,8 +5,8 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
-  // Use '/' for local development, '/iKid/' for GitHub Pages (matches repository name)
-  const base = command === 'serve' ? '/' : '/iKid/';
+  // Use '/' for local development, '/ikid/' for GitHub Pages (lowercase for URL)
+  const base = command === 'serve' ? '/' : '/ikid/';
 
   // Only enable PWA in production builds
   const isDev = command === 'serve';
@@ -67,7 +67,7 @@ export default defineConfig(({ command, mode }) => {
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Use correct base path for precaching
-        navigateFallback: base === '/' ? '/index.html' : '/iKid/index.html',
+        navigateFallback: base === '/' ? '/index.html' : '/ikid/index.html',
         navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
         runtimeCaching: [
           {
