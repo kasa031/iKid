@@ -30,8 +30,11 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  // Set basename for GitHub Pages (matches repository name: iKid)
+  const basename = import.meta.env.PROD ? '/iKid' : '/';
+  
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <ThemeProvider>
         <AuthProvider>
           <AppContent />

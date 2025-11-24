@@ -6,13 +6,17 @@
     <title>iKid - Eventyrhagen Barnehage</title>
     <script>
       // GitHub Pages 404 redirect
-      // Redirect to index.html for client-side routing
+      // This handles direct URL access to routes like /iKid/login
       const path = window.location.pathname;
-      const search = window.location.search;
-      const hash = window.location.hash;
+      const base = '/iKid';
       
-      // Redirect to index.html with the original path as hash for React Router
-      window.location.replace('/index.html' + search + (hash || '') + (path !== '/' ? '#' + path : ''));
+      // If we're already on the base path, redirect to index.html
+      if (path.startsWith(base)) {
+        window.location.replace(base + '/index.html' + window.location.search + window.location.hash);
+      } else {
+        // Otherwise, redirect to base
+        window.location.replace(base + '/index.html');
+      }
     </script>
   </head>
   <body>
