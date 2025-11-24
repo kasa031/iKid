@@ -37,7 +37,7 @@ export const exportLogsToCSV = async (
  * Download CSV file (for web) or share (for mobile)
  */
 export const downloadLogs = async (logs: CheckInOutLog[]): Promise<void> => {
-  const csv = await exportLogsToCSV(logs);
+  await exportLogsToCSV(logs);
 
   // For React Native, you would use a library like react-native-fs
   // or react-native-share to save/share the file

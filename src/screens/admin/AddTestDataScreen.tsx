@@ -4,9 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
-import { createChild, updateChild, getChildById } from '../../services/database/childService';
+import { createChild, updateChild } from '../../services/database/childService';
 import { register } from '../../services/auth/authService';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase/config';
@@ -17,7 +16,6 @@ import { Spacing, FontSizes } from '../../constants/sizes';
 import './AddTestDataScreen.css';
 
 export const AddTestDataScreen: React.FC = () => {
-  const { t } = useTranslation();
   const { colors } = useTheme();
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState('');

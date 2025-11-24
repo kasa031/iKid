@@ -158,7 +158,7 @@ export const LogsScreen: React.FC = () => {
           title={t('logs.export')}
           onPress={async () => {
             try {
-              const csv = await exportLogsToCSV(filteredLogs);
+              await exportLogsToCSV(filteredLogs);
               window.alert(t('common.success') + `: Eksportert ${filteredLogs.length} logger`);
               // In a real app, you would save/share the CSV file here
               // CSV data ready for download
