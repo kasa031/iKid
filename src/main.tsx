@@ -24,9 +24,7 @@ if (!rootElement) {
 
 try {
   ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    <App />
   );
 } catch (error) {
   console.error('Failed to render app:', error);
