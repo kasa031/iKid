@@ -51,10 +51,21 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Users collection
     match /users/{userId} {
+      // Allow users to read their own data, or staff/admin to read any user
       allow read: if request.auth != null && 
         (request.auth.uid == userId || 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['staff', 'admin']);
-      allow write: if request.auth != null && 
+      
+      // Allow users to create their own document when registering
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow users to update their own data, or staff/admin to update any user
+      allow update: if request.auth != null && 
+        (request.auth.uid == userId || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['staff', 'admin']);
+      
+      // Only staff/admin can delete users
+      allow delete: if request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['staff', 'admin'];
     }
     

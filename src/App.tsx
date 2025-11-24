@@ -4,43 +4,41 @@
  */
 
 import React from 'react';
-import { StatusBar, View, ActivityIndicator } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { AppNavigator } from './navigation/AppNavigator';
+import { AppRouter } from './navigation/AppRouter';
 import { LoadingScreen } from './components/common/LoadingScreen';
+import './App.css';
 
 const AppContent: React.FC = () => {
   const { theme, colors } = useTheme();
   const { loading } = useAuth();
 
+  React.useEffect(() => {
+    // Apply theme to document
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.style.backgroundColor = colors.background;
+    document.body.style.color = colors.text;
+  }, [theme, colors]);
+
   if (loading) {
     return <LoadingScreen />;
   }
 
-  return (
-    <>
-      <StatusBar
-        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={colors.background}
-      />
-      <NavigationContainer>
-        <AppNavigator />
-      </NavigationContainer>
-    </>
-  );
+  return <AppRouter />;
 };
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 };
 
 export default App;
-

@@ -5,43 +5,16 @@
 
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SupportedLanguage } from '../types';
+import LanguageDetector from 'i18next-browser-languagedetector';
+import type { SupportedLanguage } from '../types';
 
 // Import language resources
 import no from './locales/no.json';
 import en from './locales/en.json';
 import pl from './locales/pl.json';
 
-// Language detector configuration
-const languageDetector = {
-  type: 'languageDetector' as const,
-  async: true,
-  detect: async (callback: (lng: string) => void) => {
-    try {
-      const savedLanguage = await AsyncStorage.getItem('user-language');
-      if (savedLanguage) {
-        callback(savedLanguage);
-      } else {
-        // Default to Norwegian
-        callback('no');
-      }
-    } catch (error) {
-      callback('no');
-    }
-  },
-  init: () => {},
-  cacheUserLanguage: async (lng: string) => {
-    try {
-      await AsyncStorage.setItem('user-language', lng);
-    } catch (error) {
-      console.error('Error saving language preference:', error);
-    }
-  },
-};
-
 i18n
-  .use(languageDetector)
+  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
@@ -50,13 +23,33 @@ i18n
       pl: { translation: pl },
     },
     fallbackLng: 'no',
-    debug: __DEV__,
+    debug: (import.meta as any).env?.DEV || false,
     interpolation: {
       escapeValue: false, // React already escapes values
     },
-    compatibilityJSON: 'v3',
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+      lookupLocalStorage: 'user-language',
+      // Normalize language codes (en-GB -> en, no-NO -> no, etc.)
+      convertDetectedLanguage: (lng: string) => {
+        // Extract base language code (e.g., "en" from "en-GB")
+        const baseLang = lng.split('-')[0];
+        // Map to supported languages
+        if (baseLang === 'en') return 'en';
+        if (baseLang === 'no' || baseLang === 'nb' || baseLang === 'nn') return 'no';
+        if (baseLang === 'pl') return 'pl';
+        // Default to Norwegian if not supported
+        return 'no';
+      },
+    },
+    // Load only base language (en instead of en-GB)
+    load: 'languageOnly',
+    // Supported languages
+    supportedLngs: ['no', 'en', 'pl'],
+    // Non-explicit supported languages (en-GB will use en)
+    nonExplicitSupportedLngs: true,
   });
 
 export default i18n;
-export { SupportedLanguage };
-
+export type { SupportedLanguage };

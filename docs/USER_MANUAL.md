@@ -1,11 +1,35 @@
 # Brukermanual for iKid
 
+## Kom i gang
+
+### Første gang - Installer appen (anbefalt)
+
+iKid er en webapp som kan installeres på hjemmeskjermen for rask tilgang:
+
+**På mobil (iPhone/Android):**
+1. Åpne iKid i nettleseren (Brave, Safari, Chrome)
+2. En installasjonsbanner kan vises - trykk "Installer"
+3. Eller: Trykk på delingsikonet → "Legg til på Hjem-skjerm"
+4. Appen vil nå vises som et ikon på hjemmeskjermen
+
+**På PC:**
+1. Åpne iKid i nettleseren
+2. Klikk på installasjonsikonet i adresselinjen
+3. Eller: Meny → "Installer app"
+
+Når appen er installert, åpnes den som en standalone app uten nettleser-UI.
+
+### Åpne appen
+
+1. **Hvis installert:** Trykk på iKid-ikonet på hjemmeskjermen
+2. **Hvis ikke installert:** Åpne nettleseren og gå til iKid-URL-en
+
 ## For foreldre
 
 ### Innlogging
-1. Åpne iKid-appen
+1. Åpne iKid-appen (eller nettleseren)
 2. Skriv inn din e-postadresse og passord
-3. Trykk på "Logg inn"
+3. Klikk på "Logg inn"
 
 ### Inn- og utkryssing
 1. Gå til "Oversikt" eller "Mitt barn"
@@ -94,7 +118,44 @@ For å endre tema:
 ### Appen fungerer ikke
 - Prøv å lukke og åpne appen på nytt
 - Sjekk internettforbindelsen
+- Tøm nettleserens cache og prøv igjen
+- Hvis installert som PWA: Prøv å åpne i nettleseren i stedet
 - Kontakt barnehagen hvis problemet vedvarer
+
+### Installasjonsprompt vises ikke
+- Sjekk at du er på HTTPS (eller localhost)
+- Sjekk at nettleseren støtter PWA (Chrome, Edge, Safari, Brave)
+- Prøv å bygge appen først: `npm run build`
+- Sjekk at manifest.json er tilgjengelig
+
+## PWA-installasjon
+
+### Hvorfor installere?
+
+Når iKid er installert som PWA får du:
+- ✅ Rask tilgang direkte fra hjemmeskjermen
+- ✅ Fungerer som en standalone app (uten nettleser-UI)
+- ✅ Offline-funksjonalitet for grunnleggende operasjoner
+- ✅ Automatiske oppdateringer
+
+### Hvordan installere
+
+**iPhone (Safari/Brave):**
+1. Åpne iKid i nettleseren
+2. Trykk på delingsikonet (firkant med pil)
+3. Scroll ned og velg "Legg til på Hjem-skjerm"
+4. Trykk "Legg til"
+
+**Android (Chrome/Brave):**
+1. Åpne iKid i nettleseren
+2. En banner kan vises automatisk - trykk "Installer"
+3. Eller: Meny (tre prikker) → "Legg til på hjem-skjerm"
+4. Trykk "Legg til"
+
+**PC (Windows/Mac):**
+1. Åpne iKid i nettleseren
+2. Klikk på installasjonsikonet i adresselinjen
+3. Eller: Meny → "Installer app"
 
 ## Support
 

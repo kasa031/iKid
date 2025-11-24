@@ -4,11 +4,14 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Image } from 'react-native';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { getChildById, updateChild } from '../../services/database/childService';
+import {
+  getChildById,
+  updateChild,
+} from '../../services/database/childService';
 import { uploadImage } from '../../services/storage/imageService';
 import { Child } from '../../types';
 import { Button } from '../../components/common/Button';
@@ -17,21 +20,12 @@ import { Card } from '../../components/common/Card';
 import { Spacing, FontSizes } from '../../constants/sizes';
 import { getChildFullName, getChildAge, formatDate } from '../../utils/helpers';
 import { isRequired, isValidDate } from '../../utils/validation';
-import { launchImageLibrary, ImagePickerResponse, MediaType } from 'react-native-image-picker';
 
-interface ChildProfileScreenProps {
-  route: {
-    params: {
-      childId: string;
-    };
-  };
-}
-
-export const ChildProfileScreen: React.FC<ChildProfileScreenProps> = ({ route }) => {
+export const ChildProfileScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { user } = useAuth();
-  const { childId } = route.params;
+  const { childId } = useParams<{ childId: string }>();
   const [child, setChild] = useState<Child | null>(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -51,6 +45,7 @@ export const ChildProfileScreen: React.FC<ChildProfileScreenProps> = ({ route })
   }, [childId]);
 
   const loadChild = async () => {
+    if (!childId) return;
     try {
       const childData = await getChildById(childId);
       if (childData) {
@@ -63,7 +58,7 @@ export const ChildProfileScreen: React.FC<ChildProfileScreenProps> = ({ route })
       }
     } catch (error) {
       console.error('Error loading child:', error);
-      Alert.alert(t('common.error'), 'Kunne ikke laste barn-data');
+      alert('Kunne ikke laste barn-data');
     } finally {
       setLoading(false);
     }
@@ -91,7 +86,7 @@ export const ChildProfileScreen: React.FC<ChildProfileScreenProps> = ({ route })
   };
 
   const handleSave = async () => {
-    if (!validate() || !child) {
+    if (!validate() || !child || !childId) {
       return;
     }
 
@@ -104,85 +99,119 @@ export const ChildProfileScreen: React.FC<ChildProfileScreenProps> = ({ route })
         allergies: allergies.trim() || undefined,
         notes: notes.trim() || undefined,
       });
-      Alert.alert(t('common.success'), 'Barn-data oppdatert');
+      alert('Barn-data oppdatert');
       setEditing(false);
       await loadChild();
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke oppdatere barn-data');
+      alert(error.message || 'Kunne ikke oppdatere barn-data');
     } finally {
       setSaving(false);
     }
   };
 
   const handlePickImage = () => {
-    const options = {
-      mediaType: 'photo' as MediaType,
-      quality: 0.8,
-      maxWidth: 1024,
-      maxHeight: 1024,
-    };
-
-    launchImageLibrary(options, async (response: ImagePickerResponse) => {
-      if (response.didCancel || !response.assets || response.assets.length === 0) {
+    // Create file input element
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      if (!target.files || target.files.length === 0 || !childId) {
         return;
       }
 
-      const asset = response.assets[0];
-      if (!asset.uri) {
-        return;
-      }
-
+      const file = target.files[0];
       setUploadingImage(true);
       try {
         const imagePath = `children/${childId}/photo.jpg`;
-        const photoUrl = await uploadImage(asset.uri, imagePath);
+        const photoUrl = await uploadImage(file, imagePath);
         await updateChild(childId, { photoUrl });
-        Alert.alert(t('common.success'), 'Bilde opplastet');
+        alert('Bilde opplastet');
         await loadChild();
       } catch (error: any) {
-        Alert.alert(t('common.error'), error.message || 'Kunne ikke laste opp bilde');
+        alert(error.message || 'Kunne ikke laste opp bilde');
       } finally {
         setUploadingImage(false);
       }
-    });
+    };
+    input.click();
+  };
+
+  const containerStyle: React.CSSProperties = {
+    padding: Spacing.md,
+    backgroundColor: colors.background,
+    minHeight: '100vh',
+    overflowY: 'auto',
   };
 
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.loadingText, { color: colors.text }]}>
+      <div style={containerStyle}>
+        <p
+          style={{
+            fontSize: FontSizes.md,
+            textAlign: 'center',
+            marginTop: Spacing.xl,
+            color: colors.text,
+          }}
+        >
           {t('common.loading')}
-        </Text>
-      </View>
+        </p>
+      </div>
     );
   }
 
   if (!child) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.errorText, { color: colors.error }]}>
+      <div style={containerStyle}>
+        <p
+          style={{
+            fontSize: FontSizes.md,
+            textAlign: 'center',
+            marginTop: Spacing.xl,
+            color: colors.error,
+          }}
+        >
           Barn ikke funnet
-        </Text>
-      </View>
+        </p>
+      </div>
     );
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>
+    <div style={containerStyle}>
+      <div style={{ padding: Spacing.md }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: Spacing.lg,
+          }}
+        >
+          <h1
+            style={{
+              fontSize: FontSizes.xxl,
+              fontWeight: 700,
+              flex: 1,
+              letterSpacing: -0.3,
+              lineHeight: FontSizes.xxl * 1.2,
+              color: colors.text,
+              margin: 0,
+            }}
+          >
             {getChildFullName(child)}
-          </Text>
+          </h1>
           {!editing && user?.role !== 'parent' && (
             <Button
               title={t('common.edit')}
               onPress={() => setEditing(true)}
               variant="outline"
-              style={styles.editButton}
+              style={{ marginLeft: Spacing.md }}
             />
           )}
-        </View>
+        </div>
 
         {editing ? (
           <>
@@ -224,12 +253,19 @@ export const ChildProfileScreen: React.FC<ChildProfileScreenProps> = ({ route })
               numberOfLines={3}
             />
 
-            <View style={styles.buttonRow}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: Spacing.sm,
+                marginTop: Spacing.md,
+              }}
+            >
               <Button
                 title={t('common.save')}
                 onPress={handleSave}
                 loading={saving}
-                style={styles.button}
+                style={{ flex: 1 }}
               />
               <Button
                 title={t('common.cancel')}
@@ -238,21 +274,55 @@ export const ChildProfileScreen: React.FC<ChildProfileScreenProps> = ({ route })
                   loadChild();
                 }}
                 variant="outline"
-                style={styles.button}
+                style={{ flex: 1 }}
               />
-            </View>
+            </div>
           </>
         ) : (
           <Card>
-            <View style={styles.photoContainer}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                marginBottom: Spacing.md,
+              }}
+            >
               {child.photoUrl ? (
-                <Image source={{ uri: child.photoUrl }} style={styles.photo} />
+                <img
+                  src={child.photoUrl}
+                  alt={getChildFullName(child)}
+                  style={{
+                    width: 150,
+                    height: 150,
+                    borderRadius: 75,
+                    marginBottom: Spacing.sm,
+                    objectFit: 'cover',
+                  }}
+                />
               ) : (
-                <View style={[styles.photoPlaceholder, { backgroundColor: colors.surface }]}>
-                  <Text style={[styles.photoPlaceholderText, { color: colors.textSecondary }]}>
+                <div
+                  style={{
+                    width: 150,
+                    height: 150,
+                    borderRadius: 75,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: colors.surface,
+                    marginBottom: Spacing.sm,
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: FontSizes.sm,
+                      color: colors.textSecondary,
+                      margin: 0,
+                    }}
+                  >
                     {t('child.photo')}
-                  </Text>
-                </View>
+                  </p>
+                </div>
               )}
               {user?.role !== 'parent' && (
                 <Button
@@ -260,123 +330,108 @@ export const ChildProfileScreen: React.FC<ChildProfileScreenProps> = ({ route })
                   onPress={handlePickImage}
                   variant="outline"
                   loading={uploadingImage}
-                  style={styles.photoButton}
+                  style={{ marginTop: Spacing.xs }}
                 />
               )}
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={[styles.label, { color: colors.textSecondary }]}>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                marginBottom: Spacing.sm,
+                flexWrap: 'wrap',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: FontSizes.md,
+                  fontWeight: 600,
+                  marginRight: Spacing.xs,
+                  color: colors.textSecondary,
+                  margin: 0,
+                }}
+              >
                 {t('child.dateOfBirth')}:
-              </Text>
-              <Text style={[styles.value, { color: colors.text }]}>
-                {formatDate(child.dateOfBirth)} ({getChildAge(child.dateOfBirth)} år)
-              </Text>
-            </View>
+              </p>
+              <p
+                style={{
+                  fontSize: FontSizes.md,
+                  flex: 1,
+                  color: colors.text,
+                  margin: 0,
+                }}
+              >
+                {formatDate(child.dateOfBirth)} (
+                {getChildAge(child.dateOfBirth)} år)
+              </p>
+            </div>
             {child.allergies && (
-              <View style={styles.infoRow}>
-                <Text style={[styles.label, { color: colors.textSecondary }]}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  marginBottom: Spacing.sm,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: FontSizes.md,
+                    fontWeight: 600,
+                    marginRight: Spacing.xs,
+                    color: colors.textSecondary,
+                    margin: 0,
+                  }}
+                >
                   {t('child.allergies')}:
-                </Text>
-                <Text style={[styles.value, { color: colors.text }]}>
+                </p>
+                <p
+                  style={{
+                    fontSize: FontSizes.md,
+                    flex: 1,
+                    color: colors.text,
+                    margin: 0,
+                  }}
+                >
                   {child.allergies}
-                </Text>
-              </View>
+                </p>
+              </div>
             )}
             {child.notes && (
-              <View style={styles.infoRow}>
-                <Text style={[styles.label, { color: colors.textSecondary }]}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  marginBottom: Spacing.sm,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: FontSizes.md,
+                    fontWeight: 600,
+                    marginRight: Spacing.xs,
+                    color: colors.textSecondary,
+                    margin: 0,
+                  }}
+                >
                   {t('child.notes')}:
-                </Text>
-                <Text style={[styles.value, { color: colors.text }]}>
+                </p>
+                <p
+                  style={{
+                    fontSize: FontSizes.md,
+                    flex: 1,
+                    color: colors.text,
+                    margin: 0,
+                  }}
+                >
                   {child.notes}
-                </Text>
-              </View>
+                </p>
+              </div>
             )}
           </Card>
         )}
-      </View>
-    </ScrollView>
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: Spacing.md,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    flex: 1,
-    letterSpacing: -0.3,
-    lineHeight: FontSizes.xxl * 1.2,
-  },
-  editButton: {
-    marginLeft: Spacing.md,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    marginBottom: Spacing.sm,
-    flexWrap: 'wrap',
-  },
-  label: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    marginRight: Spacing.xs,
-  },
-  value: {
-    fontSize: FontSizes.md,
-    flex: 1,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginTop: Spacing.md,
-  },
-  button: {
-    flex: 1,
-  },
-  loadingText: {
-    fontSize: FontSizes.md,
-    textAlign: 'center',
-    marginTop: Spacing.xl,
-  },
-  errorText: {
-    fontSize: FontSizes.md,
-    textAlign: 'center',
-    marginTop: Spacing.xl,
-  },
-  photoContainer: {
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-  },
-  photo: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    marginBottom: Spacing.sm,
-  },
-  photoPlaceholder: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
-  photoPlaceholderText: {
-    fontSize: FontSizes.sm,
-  },
-  photoButton: {
-    marginTop: Spacing.xs,
-  },
-});
-

@@ -103,7 +103,9 @@ export const checkOutChild = async (
 /**
  * Get check-in/out logs for a child
  */
-export const getChildLogs = async (childId: string): Promise<CheckInOutLog[]> => {
+export const getChildLogs = async (
+  childId: string
+): Promise<CheckInOutLog[]> => {
   try {
     const q = query(
       collection(db, 'checkInOutLogs'),
@@ -111,7 +113,7 @@ export const getChildLogs = async (childId: string): Promise<CheckInOutLog[]> =>
       orderBy('timestamp', 'desc')
     );
     const logsSnapshot = await getDocs(q);
-    return logsSnapshot.docs.map((doc) => {
+    return logsSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -133,9 +135,12 @@ export const getChildLogs = async (childId: string): Promise<CheckInOutLog[]> =>
  */
 export const getAllLogs = async (): Promise<CheckInOutLog[]> => {
   try {
-    const q = query(collection(db, 'checkInOutLogs'), orderBy('timestamp', 'desc'));
+    const q = query(
+      collection(db, 'checkInOutLogs'),
+      orderBy('timestamp', 'desc')
+    );
     const logsSnapshot = await getDocs(q);
-    return logsSnapshot.docs.map((doc) => {
+    return logsSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -160,7 +165,7 @@ export const subscribeToChildStatus = (
   callback: (status: ChildStatus | null) => void
 ): (() => void) => {
   const childRef = doc(db, 'children', childId);
-  return onSnapshot(childRef, (snapshot) => {
+  return onSnapshot(childRef, snapshot => {
     if (snapshot.exists()) {
       const data = snapshot.data();
       callback(data.status || null);
@@ -169,4 +174,3 @@ export const subscribeToChildStatus = (
     }
   });
 };
-

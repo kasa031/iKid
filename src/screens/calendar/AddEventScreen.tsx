@@ -4,13 +4,11 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { createEvent } from '../../services/database/calendarService';
-import { CalendarEvent } from '../../types';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Spacing, FontSizes } from '../../constants/sizes';
@@ -20,11 +18,13 @@ export const AddEventScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
-  const [eventType, setEventType] = useState<'parent_meeting' | 'field_trip' | 'other'>('other');
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [eventType, setEventType] = useState<
+    'parent_meeting' | 'field_trip' | 'other'
+  >('other');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -32,7 +32,7 @@ export const AddEventScreen: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     if (!isRequired(title)) {
-      newErrors.title = 'Tittel er påkrevd';
+      newErrors.title = t('calendar.titleRequired');
     }
 
     setErrors(newErrors);
@@ -53,132 +53,108 @@ export const AddEventScreen: React.FC = () => {
         eventType,
         createdBy: user.id,
       });
-      Alert.alert(t('common.success'), 'Hendelse lagt til');
-      // Navigation will be handled by parent
+      window.alert(t('common.success') + ': ' + t('calendar.addSuccess'));
+      navigate('/calendar');
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke legge til hendelse');
+      window.alert(t('common.error') + ': ' + (error.message || t('calendar.addError')));
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {t('calendar.addEvent')}
-        </Text>
-
-        <Input
-          label="Tittel"
-          value={title}
-          onChangeText={setTitle}
-          error={errors.title}
-        />
-
-        <Input
-          label={t('calendar.description') || 'Beskrivelse'}
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={3}
-        />
-
-        <View style={styles.dateContainer}>
-          <Text style={[styles.label, { color: colors.text }]}>
-            Dato og tid:
-          </Text>
-          <Button
-            title={date.toLocaleString('no-NO')}
-            onPress={() => setShowDatePicker(true)}
-            variant="outline"
-          />
-          {showDatePicker && (
-            <DateTimePicker
-              value={date}
-              mode="datetime"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(event, selectedDate) => {
-                setShowDatePicker(Platform.OS === 'ios');
-                if (selectedDate) {
-                  setDate(selectedDate);
-                }
-              }}
-            />
-          )}
-        </View>
-
-        <View style={styles.typeContainer}>
-          <Text style={[styles.label, { color: colors.text }]}>
-            Type hendelse:
-          </Text>
-          <View style={styles.typeButtons}>
-            <Button
-              title={t('calendar.parentMeeting')}
-              onPress={() => setEventType('parent_meeting')}
-              variant={eventType === 'parent_meeting' ? 'primary' : 'outline'}
-              style={styles.typeButton}
-            />
-            <Button
-              title={t('calendar.fieldTrip')}
-              onPress={() => setEventType('field_trip')}
-              variant={eventType === 'field_trip' ? 'primary' : 'outline'}
-              style={styles.typeButton}
-            />
-            <Button
-              title={t('calendar.other')}
-              onPress={() => setEventType('other')}
-              variant={eventType === 'other' ? 'primary' : 'outline'}
-              style={styles.typeButton}
-            />
-          </View>
-        </View>
-
-        <Button
-          title={t('common.save')}
-          onPress={handleSave}
-          loading={loading}
-          style={styles.button}
-        />
-      </View>
-    </ScrollView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
+  const containerStyle: React.CSSProperties = {
     padding: Spacing.md,
-  },
-  title: {
+    backgroundColor: colors.background,
+    minHeight: '100vh',
+    overflowY: 'auto',
+  };
+
+  const titleStyle: React.CSSProperties = {
     fontSize: FontSizes.xxl,
-    fontWeight: '700',
+    fontWeight: 700,
     marginBottom: Spacing.lg,
     letterSpacing: -0.3,
     lineHeight: FontSizes.xxl * 1.2,
-  },
-  dateContainer: {
-    marginBottom: Spacing.md,
-  },
-  label: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-  },
-  typeContainer: {
-    marginBottom: Spacing.md,
-  },
-  typeButtons: {
-    flexDirection: 'row',
-    gap: Spacing.xs,
-  },
-  typeButton: {
-    flex: 1,
-  },
-  button: {
-    marginTop: Spacing.md,
-  },
-});
+    color: colors.text,
+    margin: 0,
+  };
 
+  const labelStyle: React.CSSProperties = {
+    fontSize: FontSizes.md,
+    fontWeight: 600,
+    marginBottom: Spacing.sm,
+    color: colors.text,
+  };
+
+  return (
+    <div style={containerStyle}>
+      <h1 style={titleStyle}>{t('calendar.addEvent')}</h1>
+
+      <Input
+        label={t('calendar.titleLabel')}
+        value={title}
+        onChangeText={setTitle}
+        error={errors.title}
+      />
+
+      <Input
+        label={t('calendar.description')}
+        value={description}
+        onChangeText={setDescription}
+        multiline
+        numberOfLines={3}
+      />
+
+      <div style={{ marginBottom: Spacing.md }}>
+        <Input
+          label={t('calendar.dateTime')}
+          type="datetime-local"
+          value={date.toISOString().slice(0, 16)}
+          onChangeText={value => {
+            if (value) {
+              setDate(new Date(value));
+            }
+          }}
+        />
+      </div>
+
+      <div style={{ marginBottom: Spacing.md }}>
+        <p style={labelStyle}>{t('calendar.eventType')}:</p>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: Spacing.sm,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Button
+            title={t('calendar.parentMeeting')}
+            onPress={() => setEventType('parent_meeting')}
+            variant={eventType === 'parent_meeting' ? 'primary' : 'outline'}
+            style={{ flex: 1, minWidth: 120 }}
+          />
+          <Button
+            title={t('calendar.fieldTrip')}
+            onPress={() => setEventType('field_trip')}
+            variant={eventType === 'field_trip' ? 'primary' : 'outline'}
+            style={{ flex: 1, minWidth: 120 }}
+          />
+          <Button
+            title={t('calendar.other')}
+            onPress={() => setEventType('other')}
+            variant={eventType === 'other' ? 'primary' : 'outline'}
+            style={{ flex: 1, minWidth: 120 }}
+          />
+        </div>
+      </div>
+
+      <Button
+        title={t('common.save')}
+        onPress={handleSave}
+        loading={loading}
+        style={{ marginTop: Spacing.md, width: '100%' }}
+      />
+    </div>
+  );
+};

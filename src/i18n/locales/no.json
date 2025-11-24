@@ -13,12 +13,15 @@
     "search": "Søk",
     "filter": "Filtrer",
     "loading": "Laster...",
+    "refresh": "Oppdater",
     "error": "Feil",
     "success": "Vellykket",
     "confirm": "Bekreft",
     "settings": "Innstillinger"
   },
   "auth": {
+    "login": "Logg inn",
+    "register": "Registrer",
     "email": "E-post",
     "password": "Passord",
     "forgotPassword": "Glemt passord?",
@@ -47,14 +50,20 @@
     "photo": "Bilde",
     "status": "Status",
     "checkInTime": "Innkryssingstid",
-    "checkOutTime": "Utkryssingstid"
+    "checkOutTime": "Utkryssingstid",
+    "addChild": "Legg til barn",
+    "addNewChild": "Legg til nytt barn",
+    "deleteChild": "Slett",
+    "deleteChildConfirm": "Er du sikker på at du vil slette {name}? Dette kan ikke angres.",
+    "yearsOld": "år"
   },
   "overview": {
     "title": "Oversikt",
     "present": "Til stede",
     "pickedUp": "Hentet",
     "notDelivered": "Ikke levert",
-    "allChildren": "Alle barn"
+    "allChildren": "Alle barn",
+    "noChildrenFound": "Ingen barn funnet"
   },
   "calendar": {
     "title": "Kalender",
@@ -63,11 +72,22 @@
     "parentMeeting": "Foreldremøte",
     "fieldTrip": "Turdag",
     "other": "Annet",
-    "noEvents": "Ingen hendelser"
+    "noEvents": "Ingen hendelser",
+    "confirmDelete": "Er du sikker på at du vil slette denne hendelsen?",
+    "deleteError": "Kunne ikke slette hendelse",
+    "titleLabel": "Tittel",
+    "titleRequired": "Tittel er påkrevd",
+    "description": "Beskrivelse",
+    "dateTime": "Dato og tid",
+    "eventType": "Type hendelse",
+    "addSuccess": "Hendelse lagt til",
+    "addError": "Kunne ikke legge til hendelse"
   },
   "settings": {
     "title": "Innstillinger",
+    "myProfile": "Min profil",
     "language": "Språk",
+    "languageDescription": "Velg språk for appen",
     "theme": "Tema",
     "light": "Lys",
     "dark": "Mørk",
@@ -75,13 +95,15 @@
     "userInfo": "Brukerinformasjon",
     "name": "Navn",
     "phone": "Telefon",
-    "updateUserInfo": "Oppdater brukerinformasjon"
+    "updateUserInfo": "Oppdater brukerinformasjon",
+    "deleteUser": "Slett konto"
   },
   "admin": {
     "addChild": "Legg til barn",
     "addStaff": "Legg til ansatt",
     "linkParent": "Knytt foreldre",
     "deleteUser": "Slett bruker",
+    "dangerZone": "Fareområde",
     "changeRole": "Endre rolle"
   },
   "messages": {
@@ -99,6 +121,11 @@
     "child": "Barn",
     "action": "Handling",
     "export": "Eksporter"
+  },
+  "pwa": {
+    "installTitle": "Installer iKid",
+    "installDescription": "Legg til på hjemmeskjermen for rask tilgang",
+    "install": "Installer"
   }
 }
 

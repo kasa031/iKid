@@ -3,14 +3,25 @@
  * Handles user-related database operations
  */
 
-import { doc, getDoc, updateDoc, deleteDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import {
+  doc,
+  updateDoc,
+  deleteDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { User } from '../../types';
 
 /**
  * Update user information
  */
-export const updateUser = async (userId: string, updates: Partial<User>): Promise<void> => {
+export const updateUser = async (
+  userId: string,
+  updates: Partial<User>
+): Promise<void> => {
   try {
     const updateData: any = {
       ...updates,
@@ -30,6 +41,12 @@ export const updateUser = async (userId: string, updates: Partial<User>): Promis
 
 /**
  * Delete user and all associated data
+ * This function deletes:
+ * - User document from Firestore
+ * - All children linked to this user (if parent)
+ * - All check-in/out logs by this user
+ *
+ * NOTE: Firebase Authentication user must be deleted separately using user.delete()
  */
 export const deleteUser = async (userId: string): Promise<void> => {
   try {
@@ -37,13 +54,18 @@ export const deleteUser = async (userId: string): Promise<void> => {
     await deleteDoc(doc(db, 'users', userId));
 
     // Delete all children linked to this user (if parent)
-    const childrenQuery = query(collection(db, 'children'), where('parentIds', 'array-contains', userId));
+    const childrenQuery = query(
+      collection(db, 'children'),
+      where('parentIds', 'array-contains', userId)
+    );
     const childrenSnapshot = await getDocs(childrenQuery);
-    
+
     for (const childDoc of childrenSnapshot.docs) {
       const childData = childDoc.data();
-      const updatedParentIds = (childData.parentIds || []).filter((id: string) => id !== userId);
-      
+      const updatedParentIds = (childData.parentIds || []).filter(
+        (id: string) => id !== userId
+      );
+
       if (updatedParentIds.length === 0) {
         // Delete child if no parents left
         await deleteDoc(doc(db, 'children', childDoc.id));
@@ -56,9 +78,12 @@ export const deleteUser = async (userId: string): Promise<void> => {
     }
 
     // Delete all check-in/out logs by this user
-    const logsQuery = query(collection(db, 'checkInOutLogs'), where('userId', '==', userId));
+    const logsQuery = query(
+      collection(db, 'checkInOutLogs'),
+      where('userId', '==', userId)
+    );
     const logsSnapshot = await getDocs(logsQuery);
-    
+
     for (const logDoc of logsSnapshot.docs) {
       await deleteDoc(doc(db, 'checkInOutLogs', logDoc.id));
     }

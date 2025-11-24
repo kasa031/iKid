@@ -1,0 +1,21 @@
+.input-container {
+  width: 100%;
+}
+
+.input-container input,
+.input-container textarea {
+  transition: border-color 0.2s;
+}
+
+.input-container input:focus,
+.input-container textarea:focus {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
+.input-container input:disabled,
+.input-container textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+

@@ -8,7 +8,10 @@ import { CalendarEvent } from '../types';
 /**
  * Check if an event is coming up soon (within 24 hours)
  */
-export const isEventComingSoon = (event: CalendarEvent, hoursThreshold: number = 24): boolean => {
+export const isEventComingSoon = (
+  event: CalendarEvent,
+  hoursThreshold: number = 24
+): boolean => {
   const now = new Date();
   const eventDate = new Date(event.date);
   const diffInHours = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60);
@@ -18,8 +21,11 @@ export const isEventComingSoon = (event: CalendarEvent, hoursThreshold: number =
 /**
  * Get upcoming events that need notifications
  */
-export const getUpcomingEvents = (events: CalendarEvent[], hoursThreshold: number = 24): CalendarEvent[] => {
-  return events.filter((event) => isEventComingSoon(event, hoursThreshold));
+export const getUpcomingEvents = (
+  events: CalendarEvent[],
+  hoursThreshold: number = 24
+): CalendarEvent[] => {
+  return events.filter(event => isEventComingSoon(event, hoursThreshold));
 };
 
 /**
@@ -36,4 +42,3 @@ export const formatEventNotification = (event: CalendarEvent): string => {
 
   return `${event.title} - ${dateStr}`;
 };
-

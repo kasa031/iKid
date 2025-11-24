@@ -1,0 +1,9 @@
+.change-role-screen {
+  overflow-y: auto;
+}
+
+.change-role-screen h1,
+.change-role-screen h2 {
+  margin: 0;
+}
+

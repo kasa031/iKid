@@ -7,7 +7,7 @@
  * Calculate relative luminance of a color
  */
 const getLuminance = (r: number, g: number, b: number): number => {
-  const [rs, gs, bs] = [r, g, b].map((val) => {
+  const [rs, gs, bs] = [r, g, b].map(val => {
     val = val / 255;
     return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
   });
@@ -55,4 +55,3 @@ export const meetsWCAGAA = (color1: string, color2: string): boolean => {
 export const meetsWCAGAAA = (color1: string, color2: string): boolean => {
   return getContrastRatio(color1, color2) >= 7;
 };
-

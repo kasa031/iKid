@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Legg inn testdata</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    button {
+      background: #2563EB;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    #output {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Legg inn testdata i iKid</h1>
+  <p>Dette skriptet legger inn 12 barn og 24 foreldre i Firestore.</p>
+  <p><strong>Viktig:</strong> Du må være logget inn i appen i en annen fane først!</p>
+  
+  <button onclick="addTestData()">Legg inn testdata</button>
+  <button onclick="clearOutput()">Tøm output</button>
+  
+  <div id="output"></div>
+
+  <script type="module">
+    import { db, auth } from '/src/services/firebase/config.ts';
+    import { collection, doc, setDoc, updateDoc, getDoc, Timestamp } from 'firebase/firestore';
+    import { createUserWithEmailAndPassword } from 'firebase/auth';
+
+    window.addTestData = async function() {
+      const output = document.getElementById('output');
+      output.textContent = '🚀 Starter...\n';
+      
+      try {
+        // Fiktive barn (12 stk)
+        const children = [
+          { firstName: 'Emma', lastName: 'Hansen', dateOfBirth: '2019-03-15', allergies: 'Nøtter', notes: 'Liker å tegne' },
+          { firstName: 'Noah', lastName: 'Johansen', dateOfBirth: '2020-05-22', allergies: '', notes: 'Aktiv og leker gjerne utendørs' },
+          { firstName: 'Olivia', lastName: 'Olsen', dateOfBirth: '2019-08-10', allergies: 'Melk', notes: 'Liker bøker' },
+          { firstName: 'Liam', lastName: 'Larsen', dateOfBirth: '2020-11-03', allergies: '', notes: 'Leker gjerne med biler' },
+          { firstName: 'Sofia', lastName: 'Andersen', dateOfBirth: '2019-01-20', allergies: 'Egg', notes: 'Kreativ og liker håndverk' },
+          { firstName: 'Erik', lastName: 'Pedersen', dateOfBirth: '2020-07-14', allergies: '', notes: 'Sporty og aktiv' },
+          { firstName: 'Maja', lastName: 'Nilsen', dateOfBirth: '2019-12-05', allergies: 'Nøtter, melk', notes: 'Liker dyr og natur' },
+          { firstName: 'Oskar', lastName: 'Kristiansen', dateOfBirth: '2020-02-28', allergies: '', notes: 'Leker gjerne med lego' },
+          { firstName: 'Nora', lastName: 'Jensen', dateOfBirth: '2019-09-18', allergies: '', notes: 'Liker musikk og dans' },
+          { firstName: 'Lucas', lastName: 'Karlsen', dateOfBirth: '2020-04-09', allergies: 'Gluten', notes: 'Liker å bygge ting' },
+          { firstName: 'Aurora', lastName: 'Solberg', dateOfBirth: '2019-06-25', allergies: '', notes: 'Liker å tegne og male' },
+          { firstName: 'Isak', lastName: 'Berg', dateOfBirth: '2020-10-12', allergies: 'Melk', notes: 'Leker gjerne utendørs' },
+        ];
+        
+        // Fiktive foreldre (24 stk - 12 par)
+        const parents = [
+          { name: 'Kari Hansen', email: 'kari.hansen@example.com', phone: '+4791234567', password: 'Test1234!', childIndex: 0 },
+          { name: 'Ole Hansen', email: 'ole.hansen@example.com', phone: '+4791234568', password: 'Test1234!', childIndex: 0 },
+          { name: 'Anne Johansen', email: 'anne.johansen@example.com', phone: '+4791234569', password: 'Test1234!', childIndex: 1 },
+          { name: 'Per Johansen', email: 'per.johansen@example.com', phone: '+4791234570', password: 'Test1234!', childIndex: 1 },
+          { name: 'Lisa Olsen', email: 'lisa.olsen@example.com', phone: '+4791234571', password: 'Test1234!', childIndex: 2 },
+          { name: 'Tom Olsen', email: 'tom.olsen@example.com', phone: '+4791234572', password: 'Test1234!', childIndex: 2 },
+          { name: 'Maria Larsen', email: 'maria.larsen@example.com', phone: '+4791234573', password: 'Test1234!', childIndex: 3 },
+          { name: 'Jan Larsen', email: 'jan.larsen@example.com', phone: '+4791234574', password: 'Test1234!', childIndex: 3 },
+          { name: 'Inger Andersen', email: 'inger.andersen@example.com', phone: '+4791234575', password: 'Test1234!', childIndex: 4 },
+          { name: 'Bjørn Andersen', email: 'bjorn.andersen@example.com', phone: '+4791234576', password: 'Test1234!', childIndex: 4 },
+          { name: 'Liv Pedersen', email: 'liv.pedersen@example.com', phone: '+4791234577', password: 'Test1234!', childIndex: 5 },
+          { name: 'Stein Pedersen', email: 'stein.pedersen@example.com', phone: '+4791234578', password: 'Test1234!', childIndex: 5 },
+          { name: 'Gunn Nilsen', email: 'gunn.nilsen@example.com', phone: '+4791234579', password: 'Test1234!', childIndex: 6 },
+          { name: 'Lars Nilsen', email: 'lars.nilsen@example.com', phone: '+4791234580', password: 'Test1234!', childIndex: 6 },
+          { name: 'Tone Kristiansen', email: 'tone.kristiansen@example.com', phone: '+4791234581', password: 'Test1234!', childIndex: 7 },
+          { name: 'Geir Kristiansen', email: 'geir.kristiansen@example.com', phone: '+4791234582', password: 'Test1234!', childIndex: 7 },
+          { name: 'Camilla Jensen', email: 'camilla.jensen@example.com', phone: '+4791234583', password: 'Test1234!', childIndex: 8 },
+          { name: 'Anders Jensen', email: 'anders.jensen@example.com', phone: '+4791234584', password: 'Test1234!', childIndex: 8 },
+          { name: 'Hilde Karlsen', email: 'hilde.karlsen@example.com', phone: '+4791234585', password: 'Test1234!', childIndex: 9 },
+          { name: 'Thomas Karlsen', email: 'thomas.karlsen@example.com', phone: '+4791234586', password: 'Test1234!', childIndex: 9 },
+          { name: 'Martine Solberg', email: 'martine.solberg@example.com', phone: '+4791234587', password: 'Test1234!', childIndex: 10 },
+          { name: 'Kristian Solberg', email: 'kristian.solberg@example.com', phone: '+4791234588', password: 'Test1234!', childIndex: 10 },
+          { name: 'Silje Berg', email: 'silje.berg@example.com', phone: '+4791234589', password: 'Test1234!', childIndex: 11 },
+          { name: 'Martin Berg', email: 'martin.berg@example.com', phone: '+4791234590', password: 'Test1234!', childIndex: 11 },
+        ];
+        
+        // Legg inn barn først
+        const childIds = [];
+        output.textContent += '📝 Legger inn barn...\n';
+        for (const child of children) {
+          const childRef = doc(collection(db, 'children'));
+          const birthDate = new Date(child.dateOfBirth);
+          await setDoc(childRef, {
+            firstName: child.firstName,
+            lastName: child.lastName,
+            dateOfBirth: Timestamp.fromDate(birthDate),
+            parentIds: [],
+            allergies: child.allergies || '',
+            notes: child.notes || '',
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+          });
+          childIds.push(childRef.id);
+          output.textContent += `  ✓ ${child.firstName} ${child.lastName}\n`;
+        }
+        
+        // Legg inn foreldre og knytt dem til barn
+        const parentIds = [];
+        output.textContent += '\n👨‍👩 Legger inn foreldre...\n';
+        for (const parent of parents) {
+          try {
+            // Opprett bruker i Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(auth, parent.email, parent.password);
+            const userId = userCredential.user.uid;
+            
+            // Opprett brukerdokument i Firestore
+            await setDoc(doc(db, 'users', userId), {
+              name: parent.name,
+              email: parent.email,
+              phone: parent.phone,
+              role: 'parent',
+              createdAt: Timestamp.now(),
+              updatedAt: Timestamp.now(),
+            });
+            
+            parentIds.push({ id: userId, childIndex: parent.childIndex });
+            output.textContent += `  ✓ ${parent.name}\n`;
+            
+            // Knytt forelder til barn
+            const childId = childIds[parent.childIndex];
+            const childRef = doc(db, 'children', childId);
+            const childDoc = await getDoc(childRef);
+            const currentParentIds = childDoc.data()?.parentIds || [];
+            
+            if (!currentParentIds.includes(userId)) {
+              await updateDoc(childRef, {
+                parentIds: [...currentParentIds, userId],
+                updatedAt: Timestamp.now(),
+              });
+            }
+          } catch (error) {
+            if (error.code === 'auth/email-already-in-use') {
+              output.textContent += `  ⚠ ${parent.name} finnes allerede, hopper over\n`;
+            } else {
+              output.textContent += `  ✗ Feil ved ${parent.name}: ${error.message}\n`;
+            }
+          }
+        }
+        
+        output.textContent += '\n✅ Ferdig!\n';
+        output.textContent += `   - ${children.length} barn lagt til\n`;
+        output.textContent += `   - ${parentIds.length} foreldre lagt til\n`;
+        output.textContent += '\nDu kan nå logge inn med:\n';
+        output.textContent += 'E-post: kari.hansen@example.com\n';
+        output.textContent += 'Passord: Test1234!\n';
+        
+      } catch (error) {
+        output.textContent += `\n❌ Feil: ${error.message}\n`;
+        console.error(error);
+      }
+    };
+
+    window.clearOutput = function() {
+      document.getElementById('output').textContent = '';
+    };
+  </script>
+</body>
+</html>
+

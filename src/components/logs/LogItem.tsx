@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { CheckInOutLog } from '../../types';
@@ -34,55 +33,24 @@ export const LogItem: React.FC<LogItemProps> = ({ log }) => {
 
   return (
     <Card>
-      <View style={styles.logRow}>
-        <Text style={[styles.logAction, { color: colors.primary }]}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.xs }}>
+        <span style={{ fontSize: FontSizes.md, fontWeight: 700, letterSpacing: 0.2, lineHeight: FontSizes.md * 1.3, color: colors.primary }}>
           {log.action === 'check_in' ? t('child.checkIn') : t('child.checkOut')}
-        </Text>
-        <Text style={[styles.logDate, { color: colors.textSecondary }]}>
+        </span>
+        <span style={{ fontSize: FontSizes.sm, lineHeight: FontSizes.sm * 1.4, color: colors.textSecondary }}>
           {formatDate(log.timestamp)} {formatTime(log.timestamp)}
-        </Text>
-      </View>
+        </span>
+      </div>
       {childName && (
-        <Text style={[styles.logChild, { color: colors.text }]}>
+        <p style={{ fontSize: FontSizes.md, marginTop: Spacing.sm, margin: 0, lineHeight: FontSizes.md * 1.4, color: colors.text }}>
           {t('logs.child')}: {childName}
-        </Text>
+        </p>
       )}
       {log.notes && (
-        <Text style={[styles.logNotes, { color: colors.textSecondary }]}>
+        <p style={{ fontSize: FontSizes.sm, marginTop: Spacing.sm, margin: 0, fontStyle: 'italic', lineHeight: FontSizes.sm * 1.5, color: colors.textSecondary }}>
           {log.notes}
-        </Text>
+        </p>
       )}
     </Card>
   );
 };
-
-const styles = StyleSheet.create({
-  logRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.xs,
-  },
-  logAction: {
-    fontSize: FontSizes.md,
-    fontWeight: '700',
-    letterSpacing: 0.2, // Improved letter spacing
-    lineHeight: FontSizes.md * 1.3, // Improved line height
-  },
-  logDate: {
-    fontSize: FontSizes.sm,
-    lineHeight: FontSizes.sm * 1.4, // Improved line height
-  },
-  logChild: {
-    fontSize: FontSizes.md,
-    marginTop: Spacing.sm,
-    lineHeight: FontSizes.md * 1.4, // Improved line height
-  },
-  logNotes: {
-    fontSize: FontSizes.sm,
-    marginTop: Spacing.sm,
-    fontStyle: 'italic',
-    lineHeight: FontSizes.sm * 1.5, // Improved line height for readability
-  },
-});
-

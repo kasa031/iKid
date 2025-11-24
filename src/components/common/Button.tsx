@@ -4,9 +4,9 @@
  */
 
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { Spacing, BorderRadius, FontSizes } from '../../constants/sizes';
+import './Button.css';
 
 interface ButtonProps {
   title: string;
@@ -14,8 +14,9 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline';
   disabled?: boolean;
   loading?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: React.CSSProperties;
+  textStyle?: React.CSSProperties;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -26,80 +27,66 @@ export const Button: React.FC<ButtonProps> = ({
   loading = false,
   style,
   textStyle,
+  type = 'button',
 }) => {
   const { colors } = useTheme();
 
-  const getButtonStyle = (): ViewStyle => {
-    const baseStyle: ViewStyle = {
-      paddingVertical: Spacing.md,
-      paddingHorizontal: Spacing.lg,
-      borderRadius: BorderRadius.md,
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: 44, // Minimum touch target size for accessibility
-      minWidth: 44,
-    };
-
-    if (variant === 'primary') {
-      return {
-        ...baseStyle,
-        backgroundColor: colors.primary,
-      };
-    } else if (variant === 'secondary') {
-      return {
-        ...baseStyle,
-        backgroundColor: colors.secondary,
-      };
-    } else {
-      return {
-        ...baseStyle,
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: colors.primary,
-      };
-    }
+  const getButtonClassName = (): string => {
+    const baseClass = 'button';
+    if (variant === 'primary') return `${baseClass} button--primary`;
+    if (variant === 'secondary') return `${baseClass} button--secondary`;
+    return `${baseClass} button--outline`;
   };
 
-  const getTextStyle = (): TextStyle => {
-    if (variant === 'outline') {
-      return {
-        color: colors.primary,
-        fontSize: FontSizes.md,
-        fontWeight: '600',
-      };
-    }
-    // Ensure white text on colored backgrounds for maximum readability
-    return {
-      color: '#FFFFFF',
-      fontSize: FontSizes.md,
-      fontWeight: '600',
-    };
+  const buttonStyle: React.CSSProperties = {
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.md,
+    paddingLeft: Spacing.lg,
+    paddingRight: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    minHeight: 44,
+    minWidth: 44,
+    ...(variant === 'primary' && { backgroundColor: colors.primary }),
+    ...(variant === 'secondary' && { backgroundColor: colors.secondary }),
+    ...(variant === 'outline' && {
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderStyle: 'solid',
+      borderColor: colors.primary,
+    }),
+    ...(disabled && { opacity: 0.5, cursor: 'not-allowed' }),
+    ...style,
+  };
+
+  const textStyleObj: React.CSSProperties = {
+    fontSize: FontSizes.md,
+    fontWeight: 600,
+    ...(variant === 'outline'
+      ? { color: colors.primary }
+      : { color: '#FFFFFF' }),
+    ...textStyle,
   };
 
   return (
-    <TouchableOpacity
-      style={[getButtonStyle(), disabled && styles.disabled, style]}
-      onPress={onPress}
+    <button
+      className={getButtonClassName()}
+      style={buttonStyle}
+      onClick={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.7}
-      accessible={true}
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      accessibilityHint={disabled ? 'Knapp er deaktivert' : undefined}
-      accessibilityState={{ disabled: disabled || loading }}
+      type={type}
+      aria-label={title}
+      aria-disabled={disabled || loading}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' ? colors.primary : '#FFFFFF'} />
+        <span
+          className="button__spinner"
+          style={{ color: variant === 'outline' ? colors.primary : '#FFFFFF' }}
+        >
+          ⏳
+        </span>
       ) : (
-        <Text style={[getTextStyle(), textStyle]}>{title}</Text>
+        <span style={textStyleObj}>{title}</span>
       )}
-    </TouchableOpacity>
+    </button>
   );
 };
-
-const styles = StyleSheet.create({
-  disabled: {
-    opacity: 0.5,
-  },
-});
-

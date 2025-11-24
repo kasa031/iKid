@@ -69,4 +69,3 @@ export type SupportedLanguage = 'no' | 'en' | 'pl';
 
 // Theme mode
 export type ThemeMode = 'light' | 'dark' | 'system';
-

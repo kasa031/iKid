@@ -58,4 +58,3 @@ export const memoize = <T extends (...args: any[]) => any>(func: T): T => {
     return result;
   }) as T;
 };
-

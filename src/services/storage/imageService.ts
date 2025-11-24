@@ -4,19 +4,32 @@
  */
 
 import { storage } from '../firebase/config';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
 
 /**
  * Upload image to Firebase Storage
+ * Accepts either a File object (web) or a file URI string (mobile)
  */
 export const uploadImage = async (
-  fileUri: string,
+  fileOrUri: File | string,
   path: string
 ): Promise<string> => {
   try {
-    // Convert file URI to blob
-    const response = await fetch(fileUri);
-    const blob = await response.blob();
+    let blob: Blob;
+
+    if (fileOrUri instanceof File) {
+      // Web: File object
+      blob = fileOrUri;
+    } else {
+      // Mobile: URI string - convert to blob
+      const response = await fetch(fileOrUri);
+      blob = await response.blob();
+    }
 
     // Create storage reference
     const storageRef = ref(storage, path);
@@ -45,4 +58,3 @@ export const deleteImage = async (path: string): Promise<void> => {
     throw error;
   }
 };
-

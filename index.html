@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icon-192.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="iKid - Digital inn- og utkryssing for barnehager" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2563EB" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="iKid" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <title>iKid - Eventyrhagen Barnehage</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Aggressively disable service worker in development
+      if ('serviceWorker' in navigator) {
+        // Unregister all service workers immediately
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(registration => {
+            registration.unregister().catch(() => {});
+          });
+        });
+        
+        // Prevent new registrations in dev mode
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          const originalRegister = navigator.serviceWorker.register;
+          navigator.serviceWorker.register = function() {
+            console.warn('Service worker registration blocked in dev mode');
+            return Promise.reject(new Error('Service workers disabled in dev mode'));
+          };
+        }
+      }
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

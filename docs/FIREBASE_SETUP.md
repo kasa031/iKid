@@ -36,21 +36,21 @@ Dette dokumentet beskriver hvordan man setter opp Firebase for iKid-applikasjone
 
 1. Gå til "Project Settings" (tannhjul-ikonet)
 2. Scroll ned til "Your apps"
-3. Klikk på ikonet for React Native (eller Web)
-4. Registrer appen med et navn
+3. Klikk på Web-ikonet (`</>`)
+4. Registrer appen med et navn (f.eks. "iKid Web App")
 5. Kopier Firebase-konfigurasjonen
-6. Lim inn i `src/services/firebase/config.ts`:
+6. Opprett en `.env.local` fil i rot-mappen og legg til:
 
-```typescript
-const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "your-app-id",
-};
+```env
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+VITE_FIREBASE_APP_ID=your-app-id
 ```
+
+**Viktig:** `.env.local` er allerede i `.gitignore` og vil ikke bli pushet til GitHub.
 
 ## 6. Installer Firebase CLI (valgfritt)
 
@@ -80,14 +80,16 @@ I Firestore Console, gå til "Indexes" og opprett følgende:
 
 ## 8. Test konfigurasjonen
 
-1. Kjør appen: `npm start`
-2. Prøv å logge inn med en testbruker
-3. Verifiser at data lagres i Firestore
+1. Start utviklingsserveren: `npm run dev`
+2. Åpne http://localhost:3000 i nettleseren
+3. Prøv å logge inn med en testbruker
+4. Verifiser at data lagres i Firestore
 
 ## Viktige sikkerhetshensyn
 
-- **Aldri** committ Firebase-konfigurasjon med ekte credentials til Git
-- Bruk miljøvariabler for produksjon
+- **Aldri** committ `.env.local` filen til Git (den er allerede i `.gitignore`)
+- Bruk miljøvariabler (`.env.local`) for lokal utvikling
+- For produksjon, bruk GitHub Secrets eller hosting-platformens miljøvariabler
 - Sørg for at Security Rules er korrekt konfigurert
 - Verifiser at region er satt til EU
 

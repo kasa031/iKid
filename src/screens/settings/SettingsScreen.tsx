@@ -4,7 +4,6 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -14,15 +13,16 @@ import { Card } from '../../components/common/Card';
 import { Spacing, FontSizes } from '../../constants/sizes';
 import { SupportedLanguage } from '../../types';
 import { changePassword } from '../../services/auth/authService';
-import { updateUser } from '../../services/database/userService';
+import { updateUser, deleteUser } from '../../services/database/userService';
+import { auth } from '../../services/firebase/config';
 import { isValidPassword, isValidPhone } from '../../utils/validation';
-import { useNavigation } from '@react-navigation/native';
+import './SettingsScreen.css';
 
 export const SettingsScreen: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { colors, themeMode, setThemeMode } = useTheme();
   const { user, signOut, refreshUser } = useAuth();
-  const navigation = useNavigation();
+  // const navigate = useNavigate(); // Not used yet
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -43,30 +43,30 @@ export const SettingsScreen: React.FC = () => {
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert(t('common.error'), 'Alle felt må fylles ut');
+      window.alert(t('common.error') + ': Alle felt må fylles ut');
       return;
     }
 
     if (!isValidPassword(newPassword)) {
-      Alert.alert(t('common.error'), 'Passord må være minst 8 tegn');
+      window.alert(t('common.error') + ': Passord må være minst 12 tegn med stor/liten bokstav, tall og spesialtegn');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert(t('common.error'), 'Nye passord matcher ikke');
+      window.alert(t('common.error') + ': Nye passord matcher ikke');
       return;
     }
 
     setChangingPassword(true);
     try {
       await changePassword(currentPassword, newPassword);
-      Alert.alert(t('common.success'), t('auth.changePassword') + ' vellykket');
+      window.alert(t('common.success') + ': ' + t('auth.changePassword') + ' vellykket');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setShowPasswordChange(false);
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke endre passord');
+      window.alert(t('common.error') + ': ' + (error.message || 'Kunne ikke endre passord'));
     } finally {
       setChangingPassword(false);
     }
@@ -76,12 +76,12 @@ export const SettingsScreen: React.FC = () => {
     if (!user) return;
 
     if (!userName.trim()) {
-      Alert.alert(t('common.error'), 'Navn er påkrevd');
+      window.alert(t('common.error') + ': Navn er påkrevd');
       return;
     }
 
     if (userPhone && !isValidPhone(userPhone)) {
-      Alert.alert(t('common.error'), 'Ugyldig telefonnummer');
+      window.alert(t('common.error') + ': Ugyldig telefonnummer');
       return;
     }
 
@@ -92,108 +92,139 @@ export const SettingsScreen: React.FC = () => {
         phone: userPhone.trim() || undefined,
       });
       await refreshUser();
-      Alert.alert(t('common.success'), t('settings.updateUserInfo') + ' vellykket');
+      window.alert(t('common.success') + ': ' + t('settings.updateUserInfo') + ' vellykket');
       setEditingUserInfo(false);
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke oppdatere brukerinformasjon');
+      window.alert(t('common.error') + ': ' + (error.message || 'Kunne ikke oppdatere brukerinformasjon'));
     } finally {
       setSavingUserInfo(false);
     }
   };
 
   const handleLogout = async () => {
-    Alert.alert(
-      t('auth.logout'),
-      'Er du sikker på at du vil logge ut?',
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('auth.logout'),
-          style: 'destructive',
-          onPress: async () => {
-            await signOut();
-          },
-        },
-      ]
-    );
+    if (window.confirm('Er du sikker på at du vil logge ut?')) {
+      await signOut();
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!user) return;
+
+    const confirmMessage = 'Er du sikker på at du vil slette kontoen din? Dette vil slette all data og kan ikke angres.';
+    if (window.confirm(confirmMessage)) {
+      try {
+        // Slett brukerdata fra Firestore
+        await deleteUser(user.id);
+
+        // Slett bruker fra Firebase Authentication
+        const firebaseUser = auth.currentUser;
+        if (firebaseUser) {
+          await firebaseUser.delete();
+        }
+
+        // Logg ut
+        await signOut();
+
+        window.alert(t('common.success') + ': Kontoen din er slettet');
+      } catch (error: any) {
+        window.alert(t('common.error') + ': ' + (error.message || 'Kunne ikke slette konto'));
+      }
+    }
+  };
+
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    backgroundColor: colors.background,
+    padding: Spacing.md,
+  };
+
+  const contentStyle: React.CSSProperties = {
+    maxWidth: 800,
+    margin: '0 auto',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: FontSizes.xxl,
+    fontWeight: 700,
+    marginBottom: Spacing.lg,
+    letterSpacing: -0.3,
+    lineHeight: FontSizes.xxl * 1.2,
+    color: colors.text,
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {t('settings.title')}
-        </Text>
+    <div style={containerStyle} className="settings-screen">
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>
+          {t('settings.myProfile') || 'Min profil'}
+        </h1>
 
-        <Card style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        <Card style={{ marginBottom: Spacing.md, borderLeft: `4px solid ${colors.primary}` }}>
+          <h2 style={{ fontSize: FontSizes.lg, fontWeight: 700, marginBottom: Spacing.md, color: colors.text }}>
             {t('settings.language')}
-          </Text>
-          <View style={styles.options}>
+          </h2>
+          <p style={{ fontSize: FontSizes.sm, marginBottom: Spacing.md, color: colors.textSecondary }}>
+            {t('settings.languageDescription') || 'Velg språk for appen'}
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: Spacing.sm }}>
             <Button
-              title="Norsk"
+              title="🇳🇴 Norsk"
               onPress={() => handleLanguageChange('no')}
               variant={i18n.language === 'no' ? 'primary' : 'outline'}
-              style={styles.optionButton}
+              style={{ flex: 1, minWidth: 120 }}
             />
             <Button
-              title="English"
+              title="🇬🇧 English"
               onPress={() => handleLanguageChange('en')}
               variant={i18n.language === 'en' ? 'primary' : 'outline'}
-              style={styles.optionButton}
+              style={{ flex: 1, minWidth: 120 }}
             />
-            <Button
-              title="Polski"
-              onPress={() => handleLanguageChange('pl')}
-              variant={i18n.language === 'pl' ? 'primary' : 'outline'}
-              style={styles.optionButton}
-            />
-          </View>
+          </div>
         </Card>
 
-        <Card style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        <Card style={{ marginBottom: Spacing.md, borderLeft: `4px solid ${colors.secondary}` }}>
+          <h2 style={{ fontSize: FontSizes.lg, fontWeight: 700, marginBottom: Spacing.md, color: colors.text }}>
             {t('settings.theme')}
-          </Text>
-          <View style={styles.options}>
+          </h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: Spacing.sm }}>
             <Button
               title={t('settings.light')}
               onPress={() => handleThemeChange('light')}
               variant={themeMode === 'light' ? 'primary' : 'outline'}
-              style={styles.optionButton}
+              style={{ flex: 1, minWidth: 100 }}
             />
             <Button
               title={t('settings.dark')}
               onPress={() => handleThemeChange('dark')}
               variant={themeMode === 'dark' ? 'primary' : 'outline'}
-              style={styles.optionButton}
+              style={{ flex: 1, minWidth: 100 }}
             />
             <Button
               title={t('settings.system')}
               onPress={() => handleThemeChange('system')}
               variant={themeMode === 'system' ? 'primary' : 'outline'}
-              style={styles.optionButton}
+              style={{ flex: 1, minWidth: 100 }}
             />
-          </View>
+          </div>
         </Card>
 
-        <Card style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        <Card style={{ marginBottom: Spacing.md, borderLeft: `4px solid ${colors.success}` }}>
+          <h2 style={{ fontSize: FontSizes.lg, fontWeight: 700, marginBottom: Spacing.md, color: colors.text }}>
             {t('settings.userInfo')}
-          </Text>
+          </h2>
           {!editingUserInfo ? (
             <>
-              <Text style={[styles.infoText, { color: colors.text }]}>
+              <p style={{ fontSize: FontSizes.md, marginBottom: Spacing.xs, color: colors.text }}>
                 {t('settings.name')}: {user?.name}
-              </Text>
+              </p>
               {user?.phone && (
-                <Text style={[styles.infoText, { color: colors.text }]}>
+                <p style={{ fontSize: FontSizes.md, marginBottom: Spacing.xs, color: colors.text }}>
                   {t('settings.phone')}: {user.phone}
-                </Text>
+                </p>
               )}
-              <Text style={[styles.infoText, { color: colors.text }]}>
+              <p style={{ fontSize: FontSizes.md, marginBottom: Spacing.xs, color: colors.text }}>
                 E-post: {user?.email}
-              </Text>
+              </p>
               <Button
                 title={t('settings.updateUserInfo')}
                 onPress={() => {
@@ -202,7 +233,7 @@ export const SettingsScreen: React.FC = () => {
                   setUserPhone(user?.phone || '');
                 }}
                 variant="outline"
-                style={styles.editButton}
+                style={{ marginTop: Spacing.sm }}
               />
             </>
           ) : (
@@ -218,12 +249,12 @@ export const SettingsScreen: React.FC = () => {
                 onChangeText={setUserPhone}
                 keyboardType="phone-pad"
               />
-              <View style={styles.buttonRow}>
+              <div style={{ display: 'flex', gap: Spacing.sm }}>
                 <Button
                   title={t('common.save')}
                   onPress={handleUpdateUserInfo}
                   loading={savingUserInfo}
-                  style={styles.button}
+                  style={{ flex: 1 }}
                 />
                 <Button
                   title={t('common.cancel')}
@@ -233,17 +264,17 @@ export const SettingsScreen: React.FC = () => {
                     setUserPhone(user?.phone || '');
                   }}
                   variant="outline"
-                  style={styles.button}
+                  style={{ flex: 1 }}
                 />
-              </View>
+              </div>
             </>
           )}
         </Card>
 
-        <Card style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        <Card style={{ marginBottom: Spacing.md, borderLeft: `4px solid ${colors.warning}` }}>
+          <h2 style={{ fontSize: FontSizes.lg, fontWeight: 700, marginBottom: Spacing.md, color: colors.text }}>
             {t('auth.changePassword')}
-          </Text>
+          </h2>
           {!showPasswordChange ? (
             <Button
               title={t('auth.changePassword')}
@@ -270,12 +301,12 @@ export const SettingsScreen: React.FC = () => {
                 onChangeText={setConfirmPassword}
                 secureTextEntry
               />
-              <View style={styles.buttonRow}>
+              <div style={{ display: 'flex', gap: Spacing.sm }}>
                 <Button
                   title={t('common.save')}
                   onPress={handleChangePassword}
                   loading={changingPassword}
-                  style={styles.button}
+                  style={{ flex: 1 }}
                 />
                 <Button
                   title={t('common.cancel')}
@@ -286,74 +317,37 @@ export const SettingsScreen: React.FC = () => {
                     setConfirmPassword('');
                   }}
                   variant="outline"
-                  style={styles.button}
+                  style={{ flex: 1 }}
                 />
-              </View>
+              </div>
             </>
           )}
         </Card>
 
-        <Button
-          title={t('auth.logout')}
-          onPress={handleLogout}
-          variant="outline"
-          style={styles.logoutButton}
-        />
-      </View>
-    </ScrollView>
+        <Card style={{ marginBottom: Spacing.md, borderLeft: `4px solid ${colors.error}` }}>
+          <h2 style={{ fontSize: FontSizes.lg, fontWeight: 700, marginBottom: Spacing.md, color: colors.text }}>
+            {t('settings.dangerZone')}
+          </h2>
+          <Button
+            title={t('auth.logout')}
+            onPress={handleLogout}
+            variant="outline"
+            style={{ marginTop: Spacing.sm, width: '100%' }}
+          />
+          <Button
+            title={t('settings.deleteUser') || 'Slett konto'}
+            onPress={handleDeleteUser}
+            variant="outline"
+            style={{
+              marginTop: Spacing.sm,
+              width: '100%',
+              borderColor: colors.error,
+              backgroundColor: `${colors.error}10`,
+            }}
+            textStyle={{ color: colors.error }}
+          />
+        </Card>
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: Spacing.md,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    marginBottom: Spacing.lg,
-    letterSpacing: -0.3,
-    lineHeight: FontSizes.xxl * 1.2,
-  },
-  section: {
-    marginBottom: Spacing.md,
-  },
-  sectionTitle: {
-    fontSize: FontSizes.lg,
-    fontWeight: '700',
-    marginBottom: Spacing.md,
-    letterSpacing: -0.2, // Tighter spacing for headings
-    lineHeight: FontSizes.lg * 1.3, // Improved line height
-  },
-  options: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  optionButton: {
-    flex: 1,
-    minWidth: 100,
-    marginRight: Spacing.sm,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  button: {
-    flex: 1,
-  },
-  logoutButton: {
-    marginTop: Spacing.lg,
-  },
-  infoText: {
-    fontSize: FontSizes.md,
-    marginBottom: Spacing.xs,
-  },
-  editButton: {
-    marginTop: Spacing.sm,
-  },
-});
-

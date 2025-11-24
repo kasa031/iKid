@@ -4,7 +4,6 @@
  */
 
 import React, { ReactNode } from 'react';
-import { View, AccessibilityInfo } from 'react-native';
 
 interface AccessibilityWrapperProps {
   children: ReactNode;
@@ -16,20 +15,17 @@ interface AccessibilityWrapperProps {
 
 export const AccessibilityWrapper: React.FC<AccessibilityWrapperProps> = ({
   children,
-  accessible = true,
   accessibilityLabel,
   accessibilityHint,
   accessibilityRole,
 }) => {
   return (
-    <View
-      accessible={accessible}
-      accessibilityLabel={accessibilityLabel}
-      accessibilityHint={accessibilityHint}
-      accessibilityRole={accessibilityRole as any}
+    <div
+      aria-label={accessibilityLabel}
+      aria-describedby={accessibilityHint ? undefined : undefined}
+      role={accessibilityRole}
     >
       {children}
-    </View>
+    </div>
   );
 };
-

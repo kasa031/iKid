@@ -4,11 +4,11 @@
  */
 
 import React from 'react';
-import { TextInput, StyleSheet, Text, View, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { Spacing, BorderRadius, FontSizes } from '../../constants/sizes';
+import './Input.css';
 
-// Ensure minimum touch target size (44x44 points for iOS, 48x48dp for Android)
+// Ensure minimum touch target size
 const MIN_TOUCH_TARGET = 44;
 
 interface InputProps {
@@ -22,8 +22,9 @@ interface InputProps {
   error?: string;
   multiline?: boolean;
   numberOfLines?: number;
-  style?: ViewStyle;
+  style?: React.CSSProperties;
   editable?: boolean;
+  type?: string;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -39,69 +40,93 @@ export const Input: React.FC<InputProps> = ({
   numberOfLines = 1,
   style,
   editable = true,
+  type,
 }) => {
   const { colors } = useTheme();
 
+  const getInputType = (): string => {
+    if (type) return type;
+    if (secureTextEntry) return 'password';
+    if (keyboardType === 'email-address') return 'email';
+    if (keyboardType === 'numeric') return 'number';
+    if (keyboardType === 'phone-pad') return 'tel';
+    return 'text';
+  };
+
+  const inputStyle: React.CSSProperties = {
+    backgroundColor: colors.surface,
+    color: colors.text,
+    borderColor: error ? colors.error : colors.border,
+    borderWidth: 1.5,
+    borderStyle: 'solid',
+    borderRadius: BorderRadius.md,
+    paddingLeft: Spacing.md,
+    paddingRight: Spacing.md,
+    paddingTop: 10, // Redusert for mer kompakt design
+    paddingBottom: 10, // Redusert for mer kompakt design
+    fontSize: FontSizes.md,
+    minHeight: MIN_TOUCH_TARGET,
+    lineHeight: 1.3, // Mer kompakt line-height
+    width: '100%',
+    fontFamily: 'inherit',
+    ...(multiline && { minHeight: 100, resize: 'vertical' }),
+    ...style,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: FontSizes.sm,
+    fontWeight: 600,
+    marginBottom: 2, // Redusert fra xs (4px) til 2px for mer kompakt design
+    letterSpacing: 0.2,
+    color: colors.text,
+    display: 'block',
+  };
+
+  const errorStyle: React.CSSProperties = {
+    fontSize: FontSizes.xs,
+    marginTop: 2, // Redusert fra xs (4px) til 2px
+    color: colors.error,
+  };
+
+  const InputComponent = multiline ? 'textarea' : 'input';
+
   return (
-    <View style={[styles.container, style]}>
-      {label && <Text style={[styles.label, { color: colors.text }]}>{label}</Text>}
-      <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: colors.surface,
-            color: colors.text,
-            borderColor: error ? colors.error : colors.border,
-          },
-          multiline && styles.multiline,
-        ]}
+    <div className="input-container" style={{ marginBottom: Spacing.xs }}> {/* Redusert ytterligere for mer kompakt design */}
+      {label && (
+        <label
+          style={labelStyle}
+          htmlFor={label.replace(/\s+/g, '-').toLowerCase()}
+        >
+          {label}
+        </label>
+      )}
+      <InputComponent
+        id={label?.replace(/\s+/g, '-').toLowerCase()}
+        type={getInputType()}
         value={value}
-        onChangeText={onChangeText}
+        onChange={e => onChangeText(e.target.value)}
         placeholder={placeholder}
-        placeholderTextColor={colors.textSecondary}
-        secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType}
+        style={inputStyle}
+        disabled={!editable}
+        rows={multiline ? numberOfLines : undefined}
         autoCapitalize={autoCapitalize}
-        multiline={multiline}
-        numberOfLines={numberOfLines}
-        editable={editable}
-        accessible={true}
-        accessibilityLabel={label || placeholder}
-        accessibilityHint={error || undefined}
-        accessibilityRole="text"
-        accessibilityState={{ disabled: !editable }}
+        aria-label={label || placeholder}
+        aria-invalid={!!error}
+        aria-describedby={
+          error
+            ? `${label?.replace(/\s+/g, '-').toLowerCase()}-error`
+            : undefined
+        }
       />
-      {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
-    </View>
+      {error && (
+        <div
+          id={`${label?.replace(/\s+/g, '-').toLowerCase()}-error`}
+          style={errorStyle}
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: Spacing.md,
-  },
-  label: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-    marginBottom: Spacing.xs,
-    letterSpacing: 0.2, // Improved letter spacing for clarity
-  },
-  input: {
-    borderWidth: 1.5, // Slightly thicker border for better visibility
-    borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    fontSize: FontSizes.md,
-    minHeight: MIN_TOUCH_TARGET, // Ensure minimum touch target size
-    lineHeight: FontSizes.md * 1.4, // Improved line height for text input
-  },
-  multiline: {
-    minHeight: 100,
-    textAlignVertical: 'top',
-  },
-  error: {
-    fontSize: FontSizes.xs,
-    marginTop: Spacing.xs,
-  },
-});
-

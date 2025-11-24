@@ -4,25 +4,33 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { register } from '../../services/auth/authService';
 import { UserRole } from '../../types';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Spacing, FontSizes } from '../../constants/sizes';
-import { isValidEmail, isValidPassword, isRequired } from '../../utils/validation';
+import {
+  isValidEmail,
+  isValidPassword,
+  isRequired,
+} from '../../utils/validation';
+import './RegisterScreen.css';
 
 export const RegisterScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [role, setRole] = useState<UserRole>(UserRole.PARENT);
+  const [role] = useState<UserRole>(UserRole.PARENT); // Role is fixed to PARENT for now
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -54,7 +62,9 @@ export const RegisterScreen: React.FC = () => {
   };
 
   const handleRegister = async () => {
-    if (!validate()) {
+    const isValid = validate();
+    
+    if (!isValid) {
       return;
     }
 
@@ -67,105 +77,97 @@ export const RegisterScreen: React.FC = () => {
         role,
         phone.trim() || undefined
       );
-      Alert.alert(t('common.success'), 'Registrering vellykket');
-      // Navigation will be handled by AuthContext
+      // Refresh user data and navigate to home
+      await refreshUser();
+      navigate('/');
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke registrere');
+      alert(error.message || 'Kunne ikke registrere');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.content}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            {t('auth.register')}
-          </Text>
-
-          <Input
-            label="Navn"
-            value={name}
-            onChangeText={setName}
-            error={errors.name}
-          />
-
-          <Input
-            label={t('auth.email')}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="example@email.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-          />
-
-          <Input
-            label={t('auth.password')}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            error={errors.password}
-          />
-
-          <Input
-            label={t('auth.confirmPassword')}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-            error={errors.confirmPassword}
-          />
-
-          <Input
-            label={t('settings.phone')}
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-          />
-
-          <Button
-            title={t('auth.register')}
-            onPress={handleRegister}
-            loading={loading}
-            style={styles.button}
-          />
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
     padding: Spacing.lg,
-  },
-  content: {
+  };
+
+  const contentStyle: React.CSSProperties = {
     width: '100%',
     maxWidth: 400,
-    alignSelf: 'center',
-  },
-  title: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: Spacing.xs, // Redusert ytterligere for mer kompakt design
+  };
+
+  const titleStyle: React.CSSProperties = {
     fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    marginBottom: Spacing.xl,
+    fontWeight: 700,
+    marginBottom: Spacing.md, // Redusert fra xl til md
     textAlign: 'center',
     letterSpacing: -0.3,
-    lineHeight: FontSizes.xxl * 1.2,
-  },
-  button: {
-    marginTop: Spacing.md,
-  },
-});
+    lineHeight: 1.2, // Mer kompakt line-height
+    color: colors.text,
+    margin: 0,
+  };
 
+  return (
+    <div style={containerStyle} className="register-screen">
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>{t('auth.register')}</h1>
+
+        <Input
+          label="Navn"
+          value={name}
+          onChangeText={setName}
+          error={errors.name}
+        />
+
+        <Input
+          label={t('auth.email')}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="example@email.com"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          error={errors.email}
+        />
+
+        <Input
+          label={t('auth.password')}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          error={errors.password}
+        />
+
+        <Input
+          label={t('auth.confirmPassword')}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          error={errors.confirmPassword}
+        />
+
+        <Input
+          label={t('settings.phone')}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
+
+        <Button
+          title={t('auth.register')}
+          onPress={handleRegister}
+          loading={loading}
+          style={{ marginTop: Spacing.sm, width: '100%' }} // Redusert fra md til sm
+        />
+      </div>
+    </div>
+  );
+};

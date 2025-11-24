@@ -35,4 +35,3 @@ export const IconSizes = {
   lg: 32,
   xl: 48,
 };
-

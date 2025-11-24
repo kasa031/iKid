@@ -4,11 +4,10 @@ Dette dokumentet beskriver hvordan man deployer iKid-applikasjonen til produksjo
 
 ## Forutsetninger
 
-- Node.js (v14 eller nyere)
-- React Native CLI
+- Node.js (v18 eller nyere)
 - Firebase-prosjekt konfigurert
-- Android Studio (for Android)
-- Xcode (for iOS, kun macOS)
+- Git repository
+- Hosting-konto (Firebase Hosting, Netlify, Vercel, eller GitHub Pages)
 
 ## Firebase-konfigurasjon
 
@@ -16,7 +15,9 @@ Dette dokumentet beskriver hvordan man deployer iKid-applikasjonen til produksjo
 2. Velg EU-region for GDPR-compliance
 3. Aktiver Firebase Authentication (Email/Password)
 4. Aktiver Firestore Database
-5. Kopier Firebase-konfigurasjonen til `src/services/firebase/config.ts`
+5. Opprett en Web App i Firebase Console
+6. Kopier Firebase-konfigurasjonen til `.env.local` (for lokal utvikling)
+7. For produksjon, legg til miljøvariabler i hosting-platformen
 
 ## Firestore Security Rules
 
@@ -60,77 +61,90 @@ service cloud.firestore {
 }
 ```
 
-## Android Deployment
+## Web Deployment
 
-### 1. Bygg release APK
-
-```bash
-cd android
-./gradlew assembleRelease
-```
-
-APK-filen vil være i `android/app/build/outputs/apk/release/`
-
-### 2. Bygg AAB (App Bundle) for Google Play
+### 1. Bygg produksjonsversjonen
 
 ```bash
-cd android
-./gradlew bundleRelease
+npm run build
 ```
 
-AAB-filen vil være i `android/app/build/outputs/bundle/release/`
+Dette genererer en `dist/` mappe med alle produksjonsfiler.
 
-### 3. Signer appen
-
-Følg Google Play's guide for app-signering.
-
-## iOS Deployment
-
-### 1. Åpne prosjektet i Xcode
+### 2. Test produksjonsbygget lokalt
 
 ```bash
-cd ios
-open iKid.xcworkspace
+npm run preview
 ```
 
-### 2. Konfigurer signing
+Dette starter en lokal server med produksjonsbygget på http://localhost:4173
 
-1. Velg prosjektet i Xcode
-2. Gå til "Signing & Capabilities"
-3. Velg ditt team og provisioning profile
+### 3. Deploy til Firebase Hosting
 
-### 3. Bygg for produksjon
+```bash
+# Installer Firebase CLI hvis ikke allerede installert
+npm install -g firebase-tools
 
-1. Velg "Any iOS Device" som target
-2. Velg "Product" > "Archive"
-3. Følg guiden for å laste opp til App Store
+# Logg inn
+firebase login
+
+# Initialiser Firebase Hosting (hvis ikke allerede gjort)
+firebase init hosting
+
+# Deploy
+firebase deploy --only hosting
+```
+
+### 4. Deploy til Netlify
+
+1. Push koden til GitHub
+2. Gå til [Netlify](https://www.netlify.com/)
+3. Koble til GitHub-repository
+4. Sett build command: `npm run build`
+5. Sett publish directory: `dist`
+6. Legg til miljøvariabler i Netlify dashboard
+7. Deploy
+
+### 5. Deploy til Vercel
+
+```bash
+# Installer Vercel CLI
+npm install -g vercel
+
+# Deploy
+vercel
+```
+
+Eller bruk Vercel dashboard og koble til GitHub-repository.
+
+### 6. Deploy til GitHub Pages
+
+Se [GITHUB_PAGES_SETUP.md](../GITHUB_PAGES_SETUP.md) for detaljerte instruksjoner.
 
 ## CI/CD Pipeline
 
 ### GitHub Actions eksempel
 
-Opprett `.github/workflows/build.yml`:
+Opprett `.github/workflows/deploy.yml`:
 
 ```yaml
-name: Build and Test
+name: Build and Deploy
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - name: Setup Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: '18'
     
     - name: Install dependencies
       run: npm install
@@ -138,29 +152,56 @@ jobs:
     - name: Run linter
       run: npm run lint
     
-    - name: Build Android
-      run: |
-        cd android
-        ./gradlew assembleRelease
+    - name: Build
+      run: npm run build
+      env:
+        VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+        VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+        VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+        VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+        VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+        VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
 ```
 
 ## Miljøvariabler
 
-Opprett `.env` fil for miljøspesifikke variabler:
+### Lokal utvikling
 
+Opprett `.env.local` fil i rot-mappen:
+
+```env
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
 ```
-FIREBASE_API_KEY=your-api-key
-FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-FIREBASE_PROJECT_ID=your-project-id
-```
+
+### Produksjon
+
+Legg til miljøvariabler i hosting-platformen:
+- **Firebase Hosting**: I Firebase Console > Hosting > Environment variables
+- **Netlify**: I Netlify Dashboard > Site settings > Environment variables
+- **Vercel**: I Vercel Dashboard > Project settings > Environment variables
+- **GitHub Actions**: I Repository settings > Secrets and variables > Actions
 
 ## Testing i produksjon
 
 1. Test alle funksjoner i produksjonsmiljø
 2. Verifiser GDPR-compliance
-3. Test på ulike enheter
-4. Test flerspråklig støtte
-5. Test dark/light mode
+3. Test på ulike nettlesere (Chrome, Firefox, Edge, Safari)
+4. Test responsivt design (mobil, tablet, desktop)
+5. Test PWA-installasjon på ulike enheter
+6. Test flerspråklig støtte
+7. Test dark/light mode
+8. Verifiser HTTPS (påkrevd for PWA)
 
 ## Vedlikehold
 

@@ -1,0 +1,9 @@
+.calendar-screen {
+  overflow-y: auto;
+}
+
+.calendar-screen h1,
+.calendar-screen h3 {
+  margin: 0;
+}
+

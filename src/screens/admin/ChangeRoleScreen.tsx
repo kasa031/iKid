@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
@@ -15,6 +14,7 @@ import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
 import { Spacing, FontSizes } from '../../constants/sizes';
 import { isValidEmail } from '../../utils/validation';
+import './ChangeRoleScreen.css';
 
 export const ChangeRoleScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -22,7 +22,6 @@ export const ChangeRoleScreen: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchEmail, setSearchEmail] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
   const [changingRole, setChangingRole] = useState(false);
 
   useEffect(() => {
@@ -32,7 +31,7 @@ export const ChangeRoleScreen: React.FC = () => {
   const loadUsers = async () => {
     try {
       const usersSnapshot = await getDocs(collection(db, 'users'));
-      const usersData = usersSnapshot.docs.map((doc) => {
+      const usersData = usersSnapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
@@ -52,20 +51,22 @@ export const ChangeRoleScreen: React.FC = () => {
 
   const handleSearch = () => {
     if (!searchEmail.trim()) {
-      Alert.alert(t('common.error'), 'Skriv inn e-postadresse');
+      window.alert(t('common.error') + ': Skriv inn e-postadresse');
       return;
     }
 
     if (!isValidEmail(searchEmail)) {
-      Alert.alert(t('common.error'), 'Ugyldig e-postadresse');
+      window.alert(t('common.error') + ': Ugyldig e-postadresse');
       return;
     }
 
-    const user = users.find((u) => u.email.toLowerCase() === searchEmail.toLowerCase().trim());
+    const user = users.find(
+      u => u.email.toLowerCase() === searchEmail.toLowerCase().trim()
+    );
     if (user) {
       setSelectedUser(user);
     } else {
-      Alert.alert(t('common.error'), 'Bruker ikke funnet');
+      window.alert(t('common.error') + ': Bruker ikke funnet');
       setSelectedUser(null);
     }
   };
@@ -81,12 +82,12 @@ export const ChangeRoleScreen: React.FC = () => {
         role: newRole,
         updatedAt: new Date(),
       });
-      Alert.alert(t('common.success'), 'Rolle endret');
+      window.alert(t('common.success') + ': Rolle endret');
       await loadUsers();
       setSelectedUser(null);
       setSearchEmail('');
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke endre rolle');
+      window.alert(t('common.error') + ': ' + (error.message || 'Kunne ikke endre rolle'));
     } finally {
       setChangingRole(false);
     }
@@ -105,14 +106,35 @@ export const ChangeRoleScreen: React.FC = () => {
     }
   };
 
-  return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {t('admin.changeRole')}
-        </Text>
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    backgroundColor: colors.background,
+    padding: Spacing.md,
+    overflowY: 'auto',
+  };
 
-        <View style={styles.searchContainer}>
+  const contentStyle: React.CSSProperties = {
+    maxWidth: 800,
+    margin: '0 auto',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: FontSizes.xxl,
+    fontWeight: 700,
+    marginBottom: Spacing.lg,
+    letterSpacing: -0.3,
+    lineHeight: FontSizes.xxl * 1.2,
+    color: colors.text,
+  };
+
+  return (
+    <div style={containerStyle} className="change-role-screen">
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>
+          {t('admin.changeRole')}
+        </h1>
+
+        <div style={{ marginBottom: Spacing.md }}>
           <Input
             label={t('auth.email')}
             value={searchEmail}
@@ -124,88 +146,37 @@ export const ChangeRoleScreen: React.FC = () => {
           <Button
             title={t('common.search')}
             onPress={handleSearch}
-            style={styles.searchButton}
+            style={{ marginTop: Spacing.sm, width: '100%' }}
           />
-        </View>
+        </div>
 
         {selectedUser && (
-          <Card style={styles.userCard}>
-            <Text style={[styles.userName, { color: colors.text }]}>
+          <Card style={{ marginTop: Spacing.md }}>
+            <h2 style={{ fontSize: FontSizes.lg, fontWeight: 700, marginBottom: Spacing.xs, letterSpacing: -0.2, lineHeight: FontSizes.lg * 1.3, color: colors.text, margin: '0 0 ' + Spacing.xs + ' 0' }}>
               {selectedUser.name}
-            </Text>
-            <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
+            </h2>
+            <p style={{ fontSize: FontSizes.md, marginBottom: Spacing.xs, color: colors.textSecondary, margin: '0 0 ' + Spacing.xs + ' 0' }}>
               {selectedUser.email}
-            </Text>
-            <Text style={[styles.currentRole, { color: colors.text }]}>
+            </p>
+            <p style={{ fontSize: FontSizes.md, fontWeight: 600, marginBottom: Spacing.md, color: colors.text, margin: '0 0 ' + Spacing.md + ' 0' }}>
               Nåværende rolle: {getRoleText(selectedUser.role)}
-            </Text>
+            </p>
 
-            <View style={styles.roleButtons}>
-              {Object.values(UserRole).map((role) => (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: Spacing.sm }}>
+              {Object.values(UserRole).map(role => (
                 <Button
                   key={role}
                   title={getRoleText(role)}
                   onPress={() => handleChangeRole(role)}
                   variant={selectedUser.role === role ? 'primary' : 'outline'}
                   disabled={selectedUser.role === role || changingRole}
-                  style={styles.roleButton}
+                  style={{ flex: 1, minWidth: 100 }}
                 />
               ))}
-            </View>
+            </div>
           </Card>
         )}
-      </View>
-    </ScrollView>
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: Spacing.md,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    marginBottom: Spacing.lg,
-    letterSpacing: -0.3,
-    lineHeight: FontSizes.xxl * 1.2,
-  },
-  searchContainer: {
-    marginBottom: Spacing.md,
-  },
-  searchButton: {
-    marginTop: Spacing.sm,
-  },
-  userCard: {
-    marginTop: Spacing.md,
-  },
-  userName: {
-    fontSize: FontSizes.lg,
-    fontWeight: '700',
-    marginBottom: Spacing.xs,
-    letterSpacing: -0.2,
-    lineHeight: FontSizes.lg * 1.3,
-  },
-  userEmail: {
-    fontSize: FontSizes.md,
-    marginBottom: Spacing.xs,
-  },
-  currentRole: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    marginBottom: Spacing.md,
-  },
-  roleButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  roleButton: {
-    flex: 1,
-    minWidth: 100,
-  },
-});
-

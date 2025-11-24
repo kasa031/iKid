@@ -8,10 +8,10 @@
 
 export const Colors = {
   light: {
-    // Primary: Vibrant blue (complementary to orange)
-    primary: '#2563EB', // Blue-600 - professional, trustworthy
-    // Secondary: Warm orange (complementary to blue)
-    secondary: '#F97316', // Orange-500 - friendly, energetic
+    // Primary: Light blue (complementary to orange)
+    primary: '#60A5FA', // Blue-400 - light, friendly blue
+    // Secondary: Light orange (complementary to blue)
+    secondary: '#FB923C', // Orange-400 - light, warm orange
     background: '#FFFFFF',
     surface: '#F8FAFC', // Slightly off-white for better contrast
     text: '#1E293B', // Slate-800 - high contrast for readability
@@ -24,10 +24,10 @@ export const Colors = {
     shadow: '#000000',
   },
   dark: {
-    // Primary: Lighter blue for dark mode
-    primary: '#3B82F6', // Blue-500 - maintains brand identity
-    // Secondary: Softer orange for dark mode
-    secondary: '#FB923C', // Orange-400 - warm but not overwhelming
+    // Primary: Light blue for dark mode
+    primary: '#60A5FA', // Blue-400 - light blue
+    // Secondary: Light orange for dark mode
+    secondary: '#FBBF24', // Orange-300 - light orange
     background: '#0F172A', // Slate-900 - true dark background
     surface: '#1E293B', // Slate-800 - elevated surfaces
     text: '#F1F5F9', // Slate-100 - high contrast for readability

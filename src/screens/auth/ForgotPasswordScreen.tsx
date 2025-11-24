@@ -4,7 +4,6 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { resetPassword } from '../../services/auth/authService';
@@ -12,6 +11,7 @@ import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Spacing, FontSizes } from '../../constants/sizes';
 import { isValidEmail } from '../../utils/validation';
+import './ForgotPasswordScreen.css';
 
 export const ForgotPasswordScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -35,10 +35,7 @@ export const ForgotPasswordScreen: React.FC = () => {
     setError('');
     try {
       await resetPassword(email.trim());
-      Alert.alert(
-        t('common.success'),
-        'E-post for tilbakestilling av passord er sendt'
-      );
+      alert('E-post for tilbakestilling av passord er sendt');
       setEmail('');
     } catch (error: any) {
       setError(error.message || 'Kunne ikke sende e-post');
@@ -47,74 +44,69 @@ export const ForgotPasswordScreen: React.FC = () => {
     }
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.content}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            {t('auth.resetPassword')}
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Skriv inn din e-postadresse for å motta en lenke for tilbakestilling av passord
-          </Text>
-
-          <Input
-            label={t('auth.email')}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="example@email.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={error}
-          />
-
-          <Button
-            title={t('auth.resetPassword')}
-            onPress={handleResetPassword}
-            loading={loading}
-            style={styles.button}
-          />
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
     padding: Spacing.lg,
-  },
-  content: {
+  };
+
+  const contentStyle: React.CSSProperties = {
     width: '100%',
     maxWidth: 400,
-    alignSelf: 'center',
-  },
-  title: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: Spacing.md,
+  };
+
+  const titleStyle: React.CSSProperties = {
     fontSize: FontSizes.xxl,
-    fontWeight: '700',
+    fontWeight: 700,
     marginBottom: Spacing.xs,
     textAlign: 'center',
     letterSpacing: -0.3,
     lineHeight: FontSizes.xxl * 1.2,
-  },
-  subtitle: {
+    color: colors.text,
+    margin: 0,
+  };
+
+  const subtitleStyle: React.CSSProperties = {
     fontSize: FontSizes.md,
     marginBottom: Spacing.xl,
     textAlign: 'center',
-  },
-  button: {
-    marginTop: Spacing.md,
-  },
-});
+    color: colors.textSecondary,
+    margin: 0,
+  };
 
+  return (
+    <div style={containerStyle} className="forgot-password-screen">
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>{t('auth.resetPassword')}</h1>
+        <p style={subtitleStyle}>
+          Skriv inn din e-postadresse for å motta en lenke for tilbakestilling
+          av passord
+        </p>
+
+        <Input
+          label={t('auth.email')}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="example@email.com"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          error={error}
+        />
+
+        <Button
+          title={t('auth.resetPassword')}
+          onPress={handleResetPassword}
+          loading={loading}
+          style={{ marginTop: Spacing.md, width: '100%' }}
+        />
+      </div>
+    </div>
+  );
+};

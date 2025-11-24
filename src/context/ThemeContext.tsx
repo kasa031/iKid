@@ -3,9 +3,13 @@
  * Provides theme (light/dark mode) state throughout the app
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useColorScheme } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { ThemeMode } from '../types';
 import { Colors } from '../constants/colors';
 
@@ -18,38 +22,62 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const systemColorScheme = useColorScheme();
+export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
+  // Get system color scheme
+  const getSystemColorScheme = (): 'light' | 'dark' => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+    }
+    return 'light';
+  };
+
   // Load saved theme preference
   useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const savedTheme = await AsyncStorage.getItem('theme-mode');
-        if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system')) {
-          setThemeModeState(savedTheme as ThemeMode);
-        }
-      } catch (error) {
-        console.error('Error loading theme:', error);
+    try {
+      const savedTheme = localStorage.getItem('theme-mode');
+      if (
+        savedTheme &&
+        (savedTheme === 'light' ||
+          savedTheme === 'dark' ||
+          savedTheme === 'system')
+      ) {
+        setThemeModeState(savedTheme as ThemeMode);
       }
-    };
-    loadTheme();
+    } catch (error) {
+      console.error('Error loading theme:', error);
+    }
   }, []);
 
   // Update theme based on themeMode
   useEffect(() => {
     if (themeMode === 'system') {
-      setTheme(systemColorScheme === 'dark' ? 'dark' : 'light');
+      const systemTheme = getSystemColorScheme();
+      setTheme(systemTheme);
+
+      // Listen for system theme changes
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (e: MediaQueryListEvent) => {
+          setTheme(e.matches ? 'dark' : 'light');
+        };
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+      }
     } else {
       setTheme(themeMode);
     }
-  }, [themeMode, systemColorScheme]);
+  }, [themeMode]);
 
   const setThemeMode = async (mode: ThemeMode) => {
     try {
-      await AsyncStorage.setItem('theme-mode', mode);
+      localStorage.setItem('theme-mode', mode);
       setThemeModeState(mode);
     } catch (error) {
       console.error('Error saving theme:', error);
@@ -72,4 +100,3 @@ export const useTheme = (): ThemeContextType => {
   }
   return context;
 };
-

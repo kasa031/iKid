@@ -1,0 +1,9 @@
+.settings-screen {
+  overflow-y: auto;
+}
+
+.settings-screen h1,
+.settings-screen h2 {
+  margin: 0;
+}
+

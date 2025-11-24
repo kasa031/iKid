@@ -4,18 +4,23 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
-import { getAllChildren, getChildById, updateChild } from '../../services/database/childService';
-import { getCurrentUser } from '../../services/auth/authService';
-import { Child, User } from '../../types';
+import {
+  getAllChildren,
+  getChildById,
+  updateChild,
+} from '../../services/database/childService';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../services/firebase/config';
+import { Child } from '../../types';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Card } from '../../components/common/Card';
 import { Spacing, FontSizes } from '../../constants/sizes';
 import { getChildFullName } from '../../utils/helpers';
 import { isValidEmail } from '../../utils/validation';
+import './LinkParentScreen.css';
 
 export const LinkParentScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -60,13 +65,18 @@ export const LinkParentScreen: React.FC = () => {
 
     try {
       // Find parent by email
-      // Note: In a real app, you'd query the users collection by email
-      // For now, we'll assume the parent exists and get their ID
-      const parent = await getCurrentUser(); // This would need to be modified to search by email
-      
-      if (!parent) {
+      const usersQuery = query(
+        collection(db, 'users'),
+        where('email', '==', parentEmail.trim().toLowerCase())
+      );
+      const usersSnapshot = await getDocs(usersQuery);
+
+      if (usersSnapshot.empty) {
         throw new Error('Foreldre ikke funnet');
       }
+
+      const parentDoc = usersSnapshot.docs[0];
+      const parentId = parentDoc.id;
 
       const child = await getChildById(selectedChildId);
       if (!child) {
@@ -75,16 +85,16 @@ export const LinkParentScreen: React.FC = () => {
 
       // Add parent to child's parentIds if not already present
       const updatedParentIds = [...child.parentIds];
-      if (!updatedParentIds.includes(parent.id)) {
-        updatedParentIds.push(parent.id);
+      if (!updatedParentIds.includes(parentId)) {
+        updatedParentIds.push(parentId);
         await updateChild(selectedChildId, {
           parentIds: updatedParentIds,
         });
-        Alert.alert(t('common.success'), 'Foreldre knyttet til barn');
+        window.alert(t('common.success') + ': Foreldre knyttet til barn');
         setParentEmail('');
         setSelectedChildId(null);
       } else {
-        Alert.alert(t('common.error'), 'Foreldre er allerede knyttet til dette barnet');
+        window.alert(t('common.error') + ': Foreldre er allerede knyttet til dette barnet');
       }
     } catch (error: any) {
       setError(error.message || 'Kunne ikke knytte foreldre');
@@ -93,32 +103,58 @@ export const LinkParentScreen: React.FC = () => {
     }
   };
 
-  return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {t('admin.linkParent')}
-        </Text>
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    backgroundColor: colors.background,
+    padding: Spacing.md,
+    overflowY: 'auto',
+  };
 
-        <View style={styles.childSelection}>
-          <Text style={[styles.label, { color: colors.text }]}>
+  const contentStyle: React.CSSProperties = {
+    maxWidth: 800,
+    margin: '0 auto',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: FontSizes.xxl,
+    fontWeight: 700,
+    marginBottom: Spacing.lg,
+    letterSpacing: -0.3,
+    lineHeight: FontSizes.xxl * 1.2,
+    color: colors.text,
+  };
+
+  return (
+    <div style={containerStyle} className="link-parent-screen">
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>
+          {t('admin.linkParent')}
+        </h1>
+
+        <div style={{ marginBottom: Spacing.md }}>
+          <label style={{ fontSize: FontSizes.md, fontWeight: 600, marginBottom: Spacing.sm, color: colors.text, display: 'block' }}>
             {t('child.children')}
-          </Text>
-          {children.map((child) => (
+          </label>
+          {children.map(child => (
             <Card
               key={child.id}
-              style={[
-                styles.childCard,
-                selectedChildId === child.id && { borderColor: colors.primary, borderWidth: 2 },
-              ]}
+              style={{
+                marginBottom: Spacing.sm,
+                cursor: 'pointer',
+                ...(selectedChildId === child.id && {
+                  borderColor: colors.primary,
+                  borderWidth: 2,
+                  borderStyle: 'solid',
+                }),
+              }}
               onPress={() => setSelectedChildId(child.id)}
             >
-              <Text style={[styles.childName, { color: colors.text }]}>
+              <p style={{ fontSize: FontSizes.md, color: colors.text, margin: 0 }}>
                 {getChildFullName(child)}
-              </Text>
+              </p>
             </Card>
           ))}
-        </View>
+        </div>
 
         <Input
           label={t('auth.email')}
@@ -134,43 +170,9 @@ export const LinkParentScreen: React.FC = () => {
           title="Knytt foreldre"
           onPress={handleLinkParent}
           loading={loading}
-          style={styles.button}
+          style={{ marginTop: Spacing.md, width: '100%' }}
         />
-      </View>
-    </ScrollView>
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: Spacing.md,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    marginBottom: Spacing.lg,
-    letterSpacing: -0.3,
-    lineHeight: FontSizes.xxl * 1.2,
-  },
-  childSelection: {
-    marginBottom: Spacing.md,
-  },
-  label: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-  },
-  childCard: {
-    marginBottom: Spacing.sm,
-  },
-  childName: {
-    fontSize: FontSizes.md,
-  },
-  button: {
-    marginTop: Spacing.md,
-  },
-});
-

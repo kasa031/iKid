@@ -3,7 +3,13 @@
  * Provides authentication state and methods throughout the app
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../services/firebase/config';
 import { getCurrentUser, signOutUser } from '../services/auth/authService';
@@ -18,12 +24,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async firebaseUser => {
       if (firebaseUser) {
         const userData = await getCurrentUser();
         setUser(userData);
@@ -47,7 +55,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut: handleSignOut, refreshUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, signOut: handleSignOut, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -60,4 +70,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-

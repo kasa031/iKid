@@ -4,12 +4,15 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
-import { getAllChildren, getChildrenByParentId, getChildById } from '../../services/database/childService';
+import {
+  getAllChildren,
+  getChildrenByParentId,
+  getChildById,
+} from '../../services/database/childService';
 import { checkInChild } from '../../services/database/checkInOutService';
 import { Child } from '../../types';
 import { Button } from '../../components/common/Button';
@@ -17,6 +20,7 @@ import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
 import { Spacing, FontSizes } from '../../constants/sizes';
 import { getChildFullName } from '../../utils/helpers';
+import './CheckInScreen.css';
 
 export const CheckInScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -51,7 +55,7 @@ export const CheckInScreen: React.FC = () => {
 
   const handleCheckIn = async () => {
     if (!selectedChildId || !user) {
-      Alert.alert(t('common.error'), 'Velg et barn');
+      alert('Velg et barn');
       return;
     }
 
@@ -61,10 +65,7 @@ export const CheckInScreen: React.FC = () => {
       if (child) {
         const status = (child as any).status;
         if (status === 'checked_in') {
-          Alert.alert(
-            t('common.error'),
-            'Barnet er allerede krysset inn'
-          );
+          alert('Barnet er allerede krysset inn');
           return;
         }
       }
@@ -75,100 +76,94 @@ export const CheckInScreen: React.FC = () => {
     setLoading(true);
     try {
       await checkInChild(selectedChildId, user.id, notes);
-      Alert.alert(t('common.success'), t('child.checkIn') + ' vellykket');
+      alert(t('child.checkIn') + ' vellykket');
       setNotes('');
       // Refresh children list
       await loadChildren();
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke krysse inn');
+      alert(error.message || 'Kunne ikke krysse inn');
     } finally {
       setLoading(false);
     }
   };
 
+  const containerStyle: React.CSSProperties = {
+    padding: Spacing.md,
+    backgroundColor: colors.background,
+    minHeight: '100vh',
+    overflowY: 'auto',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: FontSizes.xxl,
+    fontWeight: 700,
+    marginBottom: Spacing.lg,
+    letterSpacing: -0.3,
+    lineHeight: FontSizes.xxl * 1.2,
+    color: colors.text,
+    margin: 0,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: FontSizes.md,
+    fontWeight: 600,
+    marginBottom: Spacing.sm,
+    color: colors.text,
+  };
+
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {t('child.checkIn')}
-        </Text>
+    <div style={containerStyle}>
+      <h1 style={titleStyle}>{t('child.checkIn')}</h1>
 
-        {user?.role === UserRole.STAFF && (
-          <View style={styles.childSelection}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              {t('child.children')}
-            </Text>
-            {children.map((child) => (
-              <Card
-                key={child.id}
-                style={[
-                  styles.childCard,
-                  selectedChildId === child.id && { borderColor: colors.primary, borderWidth: 2 },
-                ]}
-                onPress={() => setSelectedChildId(child.id)}
+      {user?.role === UserRole.STAFF && (
+        <div style={{ marginBottom: Spacing.md }}>
+          <p style={labelStyle}>{t('child.children')}</p>
+          {children.map(child => (
+            <Card
+              key={child.id}
+              onPress={() => setSelectedChildId(child.id)}
+              style={{
+                marginBottom: Spacing.sm,
+                ...(selectedChildId === child.id && {
+                  borderColor: colors.primary,
+                  borderWidth: 2,
+                  borderStyle: 'solid',
+                }),
+              }}
+            >
+              <p
+                style={{
+                  fontSize: FontSizes.md,
+                  color: colors.text,
+                  margin: 0,
+                }}
               >
-                <Text style={[styles.childName, { color: colors.text }]}>
-                  {getChildFullName(child)}
-                </Text>
-              </Card>
-            ))}
-          </View>
-        )}
+                {getChildFullName(child)}
+              </p>
+            </Card>
+          ))}
+        </div>
+      )}
 
-        {selectedChildId && (
-          <>
-            <Input
-              label={t('child.notes')}
-              value={notes}
-              onChangeText={setNotes}
-              placeholder={t('child.notes')}
-              multiline
-              numberOfLines={3}
-            />
+      {selectedChildId && (
+        <>
+          <Input
+            label={t('child.notes')}
+            value={notes}
+            onChangeText={setNotes}
+            placeholder={t('child.notes')}
+            multiline
+            numberOfLines={3}
+          />
 
-            <Button
-              title={t('child.checkIn')}
-              onPress={handleCheckIn}
-              loading={loading}
-              style={styles.button}
-            />
-          </>
-        )}
-      </View>
-    </ScrollView>
+          <Button
+            title={t('child.checkIn')}
+            onPress={handleCheckIn}
+            loading={loading}
+            style={{ marginTop: Spacing.md, width: '100%' }}
+          />
+        </>
+      )}
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: Spacing.md,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    marginBottom: Spacing.lg,
-    letterSpacing: -0.3, // Tighter spacing for large headings
-    lineHeight: FontSizes.xxl * 1.2, // Improved line height
-  },
-  childSelection: {
-    marginBottom: Spacing.md,
-  },
-  label: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-  },
-  childCard: {
-    marginBottom: Spacing.sm,
-  },
-  childName: {
-    fontSize: FontSizes.md,
-  },
-  button: {
-    marginTop: Spacing.md,
-  },
-});
-

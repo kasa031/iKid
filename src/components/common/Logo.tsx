@@ -4,9 +4,9 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { FontSizes, Spacing } from '../../constants/sizes';
+import './Logo.css';
 
 interface LogoProps {
   size?: 'small' | 'medium' | 'large';
@@ -28,43 +28,46 @@ export const Logo: React.FC<LogoProps> = ({ size = 'medium' }) => {
 
   const sizeStyle = getSize();
 
-  return (
-    <View style={styles.container}>
-      {/* If you have a logo image, uncomment and use this: */}
-      {/* <Image
-        source={require('../../assets/logo.png')}
-        style={[styles.image, { width: sizeStyle.fontSize * 2, height: sizeStyle.fontSize * 2 }]}
-        resizeMode="contain"
-      /> */}
-      <Text style={[styles.text, { color: colors.primary, fontSize: sizeStyle.fontSize }]}>
-        Eventyrhagen
-      </Text>
-      <Text style={[styles.subtitle, { color: colors.textSecondary, fontSize: sizeStyle.fontSize * 0.6 }]}>
-        Barnehage
-      </Text>
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
+  const containerStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  image: {
-    marginBottom: Spacing.xs,
-  },
-  text: {
-    fontWeight: '700',
-    textAlign: 'center',
-    letterSpacing: 0.5, // Improved letter spacing for logo
-    lineHeight: sizeStyle.fontSize * 1.2, // Improved line height
-  },
-  subtitle: {
-    textAlign: 'center',
-    marginTop: Spacing.xs,
-    letterSpacing: 0.3, // Improved letter spacing
-    lineHeight: sizeStyle.fontSize * 0.7 * 1.3, // Improved line height
-  },
-});
+    padding: size === 'large' ? Spacing.sm : sizeStyle.padding * 0.5,
+    paddingTop: size === 'large' ? Spacing.xs : sizeStyle.padding * 0.25,
+    paddingBottom: size === 'large' ? Spacing.xs : sizeStyle.padding * 0.5,
+  };
 
+  const textStyle: React.CSSProperties = {
+    color: colors.primary,
+    fontSize: sizeStyle.fontSize,
+    fontWeight: 700,
+    textAlign: 'center',
+    letterSpacing: 0.5,
+    lineHeight: sizeStyle.fontSize * 1.2,
+    margin: 0,
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    color: colors.textSecondary,
+    fontSize: sizeStyle.fontSize * 0.6,
+    textAlign: 'center',
+    marginTop: 1, // Redusert ytterligere for tettere spacing
+    letterSpacing: 0.3,
+    lineHeight: sizeStyle.fontSize * 0.6 * 1.1, // Redusert line-height
+    margin: '1px 0 0 0',
+  };
+
+  return (
+    <div style={containerStyle} className="logo-container">
+      {/* If you have a logo image, add it here: */}
+      {/* <img src="/logo.png" alt="Eventyrhagen Logo" style={{ width: sizeStyle.fontSize * 2, height: sizeStyle.fontSize * 2, marginBottom: Spacing.xs }} /> */}
+      <h1 style={textStyle} className="logo-text">
+        Eventyrhagen
+      </h1>
+      <p style={subtitleStyle} className="logo-subtitle">
+        Barnehage
+      </p>
+    </div>
+  );
+};

@@ -82,6 +82,7 @@
     "addStaff": "Dodaj pracownika",
     "linkParent": "Połącz rodzica",
     "deleteUser": "Usuń użytkownika",
+    "dangerZone": "Strefa niebezpieczeństwa",
     "changeRole": "Zmień rolę"
   },
   "messages": {
@@ -99,6 +100,11 @@
     "child": "Dziecko",
     "action": "Akcja",
     "export": "Eksportuj"
+  },
+  "pwa": {
+    "installTitle": "Zainstaluj iKid",
+    "installDescription": "Dodaj do ekranu głównego dla szybkiego dostępu",
+    "install": "Zainstaluj"
   }
 }
 

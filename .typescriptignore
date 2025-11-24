@@ -1,0 +1,6 @@
+# TypeScript ignore file
+# Ignorer Android/Gradle-filer som ikke er TypeScript
+
+android/
+node_modules/
+

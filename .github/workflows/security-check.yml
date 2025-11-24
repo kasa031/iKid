@@ -1,0 +1,38 @@
+name: Security Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  security-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security check
+        run: npm run check-secrets all
+        continue-on-error: false
+
+      - name: Check for forbidden files
+        run: |
+          if git ls-files | grep -E "(config\.ts|\.env$|\.env\.local$|\.env\.production$)"; then
+            echo "❌ ERROR: Forbidden files found in repository!"
+            echo "Files containing secrets should NEVER be committed."
+            exit 1
+          else
+            echo "✅ No forbidden files found"
+          fi
+

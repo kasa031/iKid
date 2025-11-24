@@ -9,14 +9,82 @@ import { Child, User, UserRole } from '../types';
 /**
  * Generate fictional child data
  */
-export const generateFictionalChildren = (count: number): Omit<Child, 'id' | 'createdAt' | 'updatedAt'>[] => {
+export const generateFictionalChildren = (
+  count: number
+): Omit<Child, 'id' | 'createdAt' | 'updatedAt'>[] => {
   const firstNames = [
-    'Emma', 'Noah', 'Olivia', 'Liam', 'Sofia', 'Erik', 'Maja', 'Oskar',
-    'Nora', 'Lucas', 'Sara', 'Filip', 'Ingrid', 'Jakob', 'Hanna', 'Marius'
+    'Emma',
+    'Noah',
+    'Olivia',
+    'Liam',
+    'Sofia',
+    'Erik',
+    'Maja',
+    'Oskar',
+    'Nora',
+    'Lucas',
+    'Sara',
+    'Filip',
+    'Ingrid',
+    'Jakob',
+    'Hanna',
+    'Marius',
+    'Aurora',
+    'Isak',
+    'Emilie',
+    'Henrik',
+    'Amalie',
+    'Alexander',
+    'Frida',
+    'William',
+    'Ella',
+    'Magnus',
+    'Sofie',
+    'Emil',
+    'Ida',
+    'Sebastian',
+    'Mia',
+    'Benjamin',
+    'Linnea',
+    'Daniel',
+    'Vilde',
+    'Jonas',
+    'Thea',
+    'Oliver',
+    'Mathilde',
+    'Lukas',
   ];
   const lastNames = [
-    'Hansen', 'Johansen', 'Olsen', 'Larsen', 'Andersen', 'Pedersen',
-    'Nilsen', 'Kristiansen', 'Jensen', 'Karlsen', 'Berg', 'Haugen'
+    'Hansen',
+    'Johansen',
+    'Olsen',
+    'Larsen',
+    'Andersen',
+    'Pedersen',
+    'Nilsen',
+    'Kristiansen',
+    'Jensen',
+    'Karlsen',
+    'Berg',
+    'Haugen',
+    'Solberg',
+    'Aas',
+    'Bakke',
+    'Dahl',
+    'Eide',
+    'Foss',
+    'Gundersen',
+    'Holm',
+    'Iversen',
+    'Knutsen',
+    'Lund',
+    'Myhre',
+    'Nordby',
+    'Østby',
+    'Rasmussen',
+    'Sørensen',
+    'Tvedt',
+    'Ulriksen',
   ];
 
   const children: Omit<Child, 'id' | 'createdAt' | 'updatedAt'>[] = [];
@@ -44,14 +112,83 @@ export const generateFictionalChildren = (count: number): Omit<Child, 'id' | 'cr
 /**
  * Generate fictional user data
  */
-export const generateFictionalUsers = (count: number, role: UserRole): Omit<User, 'id' | 'createdAt' | 'updatedAt'>[] => {
+export const generateFictionalUsers = (
+  count: number,
+  role: UserRole
+): Omit<User, 'id' | 'createdAt' | 'updatedAt'>[] => {
   const firstNames = [
-    'Kari', 'Ole', 'Anne', 'Per', 'Lisa', 'Tom', 'Maria', 'Jan',
-    'Inger', 'Bjørn', 'Liv', 'Stein', 'Gunn', 'Lars', 'Tone', 'Geir'
+    'Kari',
+    'Ole',
+    'Anne',
+    'Per',
+    'Lisa',
+    'Tom',
+    'Maria',
+    'Jan',
+    'Inger',
+    'Bjørn',
+    'Liv',
+    'Stein',
+    'Gunn',
+    'Lars',
+    'Tone',
+    'Geir',
+    'Camilla',
+    'Anders',
+    'Hilde',
+    'Thomas',
+    'Martine',
+    'Kristian',
+    'Silje',
+    'Martin',
+    'Heidi',
+    'Erik',
+    'Marianne',
+    'Stian',
+    'Lise',
+    'Espen',
+    'Nina',
+    'Rune',
+    'Tina',
+    'Morten',
+    'Ingrid',
+    'Jørgen',
+    'Siv',
+    'Henrik',
+    'Elisabeth',
+    'Fredrik',
   ];
   const lastNames = [
-    'Hansen', 'Johansen', 'Olsen', 'Larsen', 'Andersen', 'Pedersen',
-    'Nilsen', 'Kristiansen', 'Jensen', 'Karlsen', 'Berg', 'Haugen'
+    'Hansen',
+    'Johansen',
+    'Olsen',
+    'Larsen',
+    'Andersen',
+    'Pedersen',
+    'Nilsen',
+    'Kristiansen',
+    'Jensen',
+    'Karlsen',
+    'Berg',
+    'Haugen',
+    'Solberg',
+    'Aas',
+    'Bakke',
+    'Dahl',
+    'Eide',
+    'Foss',
+    'Gundersen',
+    'Holm',
+    'Iversen',
+    'Knutsen',
+    'Lund',
+    'Myhre',
+    'Nordby',
+    'Østby',
+    'Rasmussen',
+    'Sørensen',
+    'Tvedt',
+    'Ulriksen',
   ];
 
   const users: Omit<User, 'id' | 'createdAt' | 'updatedAt'>[] = [];
@@ -72,4 +209,3 @@ export const generateFictionalUsers = (count: number, role: UserRole): Omit<User
 
   return users;
 };
-

@@ -4,34 +4,39 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { getAllChildren, getChildrenByParentId } from '../services/database/childService';
+import {
+  getAllChildren,
+  getChildrenByParentId,
+} from '../services/database/childService';
 import { Child, UserRole, ChildStatus } from '../types';
 import { Card } from '../components/common/Card';
+import { Button } from '../components/common/Button';
+import { Input } from '../components/common/Input';
 import { Spacing, FontSizes } from '../constants/sizes';
-import { getChildFullName, getStatusText, getStatusColor, formatTime } from '../utils/helpers';
+import {
+  getChildFullName,
+  getStatusColor,
+  formatTime,
+} from '../utils/helpers';
 import { subscribeToChildStatus } from '../services/database/checkInOutService';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigate } from 'react-router-dom';
 import { debounce } from '../utils/optimization';
+import './OverviewScreen.css';
 
 export const OverviewScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { user } = useAuth();
-  const navigation = useNavigation();
+  const navigate = useNavigate();
   const [children, setChildren] = useState<Child[]>([]);
   const [filteredChildren, setFilteredChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ChildStatus | 'all'>('all');
-
-  useEffect(() => {
-    loadChildren();
-  }, [user]);
 
   // Debounce search to avoid filtering on every keystroke
   const debouncedFilter = React.useMemo(
@@ -43,34 +48,46 @@ export const OverviewScreen: React.FC = () => {
     debouncedFilter();
   }, [children, searchQuery, statusFilter, debouncedFilter]);
 
-  const loadChildren = async () => {
-    try {
-      let childrenData: Child[] = [];
-      if (user?.role === UserRole.PARENT) {
-        childrenData = await getChildrenByParentId(user.id);
-      } else {
-        childrenData = await getAllChildren();
-      }
-      setChildren(childrenData);
-      
-      // Subscribe to real-time updates for each child
-      childrenData.forEach((child) => {
-        const unsubscribe = subscribeToChildStatus(child.id, (status) => {
-          setChildren((prev) =>
-            prev.map((c) =>
-              c.id === child.id ? { ...c, status: status as any } : c
-            )
-          );
+  useEffect(() => {
+    let unsubscribes: (() => void)[] = [];
+
+    const loadChildren = async () => {
+      try {
+        let childrenData: Child[] = [];
+        if (user?.role === UserRole.PARENT) {
+          childrenData = await getChildrenByParentId(user.id);
+        } else {
+          childrenData = await getAllChildren();
+        }
+        setChildren(childrenData);
+
+        // Subscribe to real-time updates for each child
+        childrenData.forEach(child => {
+          const unsubscribe = subscribeToChildStatus(child.id, status => {
+            setChildren(prev =>
+              prev.map(c =>
+                c.id === child.id ? { ...c, status: status as any } : c
+              )
+            );
+          });
+          unsubscribes.push(unsubscribe);
         });
-        // Note: In a real app, you'd want to clean up these subscriptions
-      });
-    } catch (error) {
-      console.error('Error loading children:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+      } catch (error) {
+        console.error('Error loading children:', error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    };
+
+    loadChildren();
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      unsubscribes.forEach(unsubscribe => unsubscribe());
+      unsubscribes = [];
+    };
+  }, [user]);
 
   const filterChildren = () => {
     let filtered = [...children];
@@ -79,7 +96,7 @@ export const OverviewScreen: React.FC = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (child) =>
+        child =>
           child.firstName.toLowerCase().includes(query) ||
           child.lastName.toLowerCase().includes(query)
       );
@@ -87,7 +104,7 @@ export const OverviewScreen: React.FC = () => {
 
     // Filter by status
     if (statusFilter !== 'all') {
-      filtered = filtered.filter((child) => {
+      filtered = filtered.filter(child => {
         const status = (child as any).status || ChildStatus.NOT_CHECKED_IN;
         return status === statusFilter;
       });
@@ -96,12 +113,37 @@ export const OverviewScreen: React.FC = () => {
     setFilteredChildren(filtered);
   };
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    loadChildren();
+    try {
+      let childrenData: Child[] = [];
+      if (user?.role === UserRole.PARENT) {
+        childrenData = await getChildrenByParentId(user.id);
+      } else {
+        childrenData = await getAllChildren();
+      }
+      setChildren(childrenData);
+    } catch (error) {
+      console.error('Error loading children:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
-  const renderChildItem = ({ item }: { item: Child }) => {
+  const getStatusText = (status: ChildStatus): string => {
+    switch (status) {
+      case ChildStatus.CHECKED_IN:
+        return t('overview.present');
+      case ChildStatus.CHECKED_OUT:
+        return t('overview.pickedUp');
+      case ChildStatus.NOT_CHECKED_IN:
+        return t('overview.notDelivered');
+      default:
+        return t('common.error') || 'Ukjent';
+    }
+  };
+
+  const renderChildItem = (item: Child) => {
     const status = (item as any).status || ChildStatus.NOT_CHECKED_IN;
     const statusColor = getStatusColor(status);
     const lastCheckIn = (item as any).lastCheckIn?.toDate?.() || null;
@@ -109,181 +151,196 @@ export const OverviewScreen: React.FC = () => {
 
     return (
       <Card
+        key={item.id}
         onPress={() => {
           if (user?.role === UserRole.STAFF) {
-            (navigation as any).navigate('ChildProfile', { childId: item.id });
+            navigate(`/child/${item.id}`);
           }
         }}
       >
-        <View style={styles.childItem}>
-          <View style={styles.childInfo}>
-            <Text style={[styles.childName, { color: colors.text, fontWeight: '600' }]}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <h3
+              style={{
+                color: colors.text,
+                fontWeight: 600,
+                fontSize: FontSizes.lg,
+                marginBottom: Spacing.sm,
+                margin: 0,
+              }}
+            >
               {getChildFullName(item)}
-            </Text>
-            <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-              <Text style={[styles.statusText, { color: '#FFFFFF', fontWeight: '600' }]}>
+            </h3>
+            <div
+              style={{
+                backgroundColor: statusColor,
+                paddingLeft: Spacing.md,
+                paddingRight: Spacing.md,
+                paddingTop: Spacing.sm,
+                paddingBottom: Spacing.sm,
+                borderRadius: 16,
+                alignSelf: 'flex-start',
+                marginBottom: Spacing.xs,
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+              }}
+            >
+              <span
+                style={{
+                  color: '#FFFFFF',
+                  fontSize: FontSizes.sm,
+                  fontWeight: 600,
+                  letterSpacing: 0.3,
+                }}
+              >
                 {getStatusText(status)}
-              </Text>
-            </View>
+              </span>
+            </div>
             {lastCheckIn && status === ChildStatus.CHECKED_IN && (
-              <Text style={[styles.timeText, { color: colors.textSecondary, fontSize: FontSizes.sm }]}>
+              <p
+                style={{
+                  color: colors.textSecondary,
+                  fontSize: FontSizes.sm,
+                  marginTop: Spacing.xs,
+                  margin: 0,
+                }}
+              >
                 {t('child.checkInTime')}: {formatTime(lastCheckIn)}
-              </Text>
+              </p>
             )}
             {lastCheckOut && status === ChildStatus.CHECKED_OUT && (
-              <Text style={[styles.timeText, { color: colors.textSecondary, fontSize: FontSizes.sm }]}>
+              <p
+                style={{
+                  color: colors.textSecondary,
+                  fontSize: FontSizes.sm,
+                  marginTop: Spacing.xs,
+                  margin: 0,
+                }}
+              >
                 {t('child.checkOutTime')}: {formatTime(lastCheckOut)}
-              </Text>
+              </p>
             )}
-          </View>
-        </View>
+          </div>
+        </div>
       </Card>
     );
   };
 
+  const containerStyle: React.CSSProperties = {
+    padding: Spacing.md,
+    backgroundColor: colors.background,
+    minHeight: '100vh',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: FontSizes.xxl,
+    fontWeight: 700,
+    marginBottom: Spacing.md,
+    letterSpacing: -0.3,
+    lineHeight: FontSizes.xxl * 1.2,
+    color: colors.text,
+    margin: 0,
+  };
+
+  const filterContainerStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'row',
+    marginBottom: Spacing.md,
+    gap: Spacing.xs,
+  };
+
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.loadingText, { color: colors.text }]}>
+      <div style={containerStyle}>
+        <p
+          style={{
+            fontSize: FontSizes.md,
+            textAlign: 'center',
+            marginTop: Spacing.xl,
+            color: colors.text,
+          }}
+        >
           {t('common.loading')}
-        </Text>
-      </View>
+        </p>
+      </div>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>
-        {t('overview.title')}
-      </Text>
-      
-      <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
-        <TextInput
-          style={[styles.searchInput, { color: colors.text }]}
-          placeholder={t('common.search')}
-          placeholderTextColor={colors.textSecondary}
+    <div style={containerStyle}>
+      <h1 style={titleStyle}>{t('overview.title')}</h1>
+
+      <div style={{ marginBottom: Spacing.md }}>
+        <Input
           value={searchQuery}
           onChangeText={setSearchQuery}
+          placeholder={t('common.search')}
+          style={{ width: '100%' }}
         />
-      </View>
+      </div>
 
-      <View style={styles.filterContainer}>
+      <div style={filterContainerStyle}>
         <Button
           title={t('overview.allChildren')}
           onPress={() => setStatusFilter('all')}
           variant={statusFilter === 'all' ? 'primary' : 'outline'}
-          style={styles.filterButton}
+          style={{ flex: 1 }}
         />
         <Button
           title={t('overview.present')}
           onPress={() => setStatusFilter(ChildStatus.CHECKED_IN)}
-          variant={statusFilter === ChildStatus.CHECKED_IN ? 'primary' : 'outline'}
-          style={styles.filterButton}
+          variant={
+            statusFilter === ChildStatus.CHECKED_IN ? 'primary' : 'outline'
+          }
+          style={{ flex: 1 }}
         />
         <Button
           title={t('overview.pickedUp')}
           onPress={() => setStatusFilter(ChildStatus.CHECKED_OUT)}
-          variant={statusFilter === ChildStatus.CHECKED_OUT ? 'primary' : 'outline'}
-          style={styles.filterButton}
+          variant={
+            statusFilter === ChildStatus.CHECKED_OUT ? 'primary' : 'outline'
+          }
+          style={{ flex: 1 }}
         />
-      </View>
+      </div>
 
-      <FlatList
-        data={filteredChildren}
-        renderItem={renderChildItem}
-        keyExtractor={(item) => item.id}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Ingen barn funnet
-          </Text>
-        }
-      />
-    </View>
+      {refreshing && (
+        <div style={{ textAlign: 'center', padding: Spacing.md }}>
+          <span style={{ color: colors.textSecondary }}>{t('common.loading')}</span>
+        </div>
+      )}
+
+      <div style={{ paddingBottom: Spacing.lg }}>
+        {filteredChildren.length === 0 ? (
+          <p
+            style={{
+              fontSize: FontSizes.md,
+              textAlign: 'center',
+              marginTop: Spacing.xl,
+              color: colors.textSecondary,
+            }}
+          >
+            {t('overview.noChildrenFound') || 'Ingen barn funnet'}
+          </p>
+        ) : (
+          filteredChildren.map(item => renderChildItem(item))
+        )}
+      </div>
+
+      <div style={{ textAlign: 'center', marginTop: Spacing.md }}>
+        <Button
+          title={refreshing ? t('common.loading') : t('common.refresh') || 'Oppdater'}
+          onPress={onRefresh}
+          variant="outline"
+          disabled={refreshing}
+        />
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: Spacing.md,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    marginBottom: Spacing.md,
-    letterSpacing: -0.3,
-    lineHeight: FontSizes.xxl * 1.2,
-  },
-  listContent: {
-    paddingBottom: Spacing.lg,
-  },
-  childItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  childInfo: {
-    flex: 1,
-  },
-  childName: {
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-    lineHeight: FontSizes.lg * 1.4, // Improved line height for readability
-  },
-  statusBadge: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: 16,
-    alignSelf: 'flex-start',
-    marginBottom: Spacing.xs,
-    // Enhanced shadow for better visibility
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  statusText: {
-    color: '#FFFFFF',
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-    letterSpacing: 0.3, // Improved letter spacing for clarity
-  },
-  loadingText: {
-    fontSize: FontSizes.md,
-    textAlign: 'center',
-    marginTop: Spacing.xl,
-  },
-  emptyText: {
-    fontSize: FontSizes.md,
-    textAlign: 'center',
-    marginTop: Spacing.xl,
-  },
-  searchContainer: {
-    marginBottom: Spacing.md,
-    borderRadius: 8,
-    paddingHorizontal: Spacing.md,
-  },
-  searchInput: {
-    height: 40,
-    fontSize: FontSizes.md,
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    marginBottom: Spacing.md,
-    gap: Spacing.xs,
-  },
-  filterButton: {
-    flex: 1,
-  },
-  timeText: {
-    fontSize: FontSizes.sm,
-    marginTop: Spacing.xs,
-  },
-});
-

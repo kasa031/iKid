@@ -4,7 +4,6 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { createChild } from '../../services/database/childService';
@@ -12,6 +11,7 @@ import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Spacing, FontSizes } from '../../constants/sizes';
 import { isRequired, isValidDate } from '../../utils/validation';
+import './AddChildScreen.css';
 
 export const AddChildScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -61,7 +61,7 @@ export const AddChildScreen: React.FC = () => {
         allergies: allergies.trim() || undefined,
         notes: notes.trim() || undefined,
       });
-      Alert.alert(t('common.success'), 'Barn lagt til');
+      window.alert(t('common.success') + ': Barn lagt til');
       // Reset form
       setFirstName('');
       setLastName('');
@@ -69,18 +69,39 @@ export const AddChildScreen: React.FC = () => {
       setAllergies('');
       setNotes('');
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke legge til barn');
+      window.alert(t('common.error') + ': ' + (error.message || 'Kunne ikke legge til barn'));
     } finally {
       setLoading(false);
     }
   };
 
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    backgroundColor: colors.background,
+    padding: Spacing.md,
+    overflowY: 'auto',
+  };
+
+  const contentStyle: React.CSSProperties = {
+    maxWidth: 800,
+    margin: '0 auto',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: FontSizes.xxl,
+    fontWeight: 700,
+    marginBottom: Spacing.lg,
+    letterSpacing: -0.3,
+    lineHeight: FontSizes.xxl * 1.2,
+    color: colors.text,
+  };
+
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
+    <div style={containerStyle} className="add-child-screen">
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>
           {t('admin.addChild')}
-        </Text>
+        </h1>
 
         <Input
           label={t('child.firstName')}
@@ -124,29 +145,9 @@ export const AddChildScreen: React.FC = () => {
           title={t('common.save')}
           onPress={handleSave}
           loading={loading}
-          style={styles.button}
+          style={{ marginTop: Spacing.md, width: '100%' }}
         />
-      </View>
-    </ScrollView>
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: Spacing.md,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    marginBottom: Spacing.lg,
-    letterSpacing: -0.3,
-    lineHeight: FontSizes.xxl * 1.2,
-  },
-  button: {
-    marginTop: Spacing.md,
-  },
-});
-

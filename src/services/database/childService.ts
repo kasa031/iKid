@@ -16,7 +16,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { Child, UserRole } from '../../types';
+import { Child } from '../../types';
 
 /**
  * Get a child by ID
@@ -53,7 +53,7 @@ export const getChildById = async (childId: string): Promise<Child | null> => {
 export const getAllChildren = async (): Promise<Child[]> => {
   try {
     const childrenSnapshot = await getDocs(collection(db, 'children'));
-    return childrenSnapshot.docs.map((doc) => {
+    return childrenSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -77,11 +77,16 @@ export const getAllChildren = async (): Promise<Child[]> => {
 /**
  * Get children by parent ID
  */
-export const getChildrenByParentId = async (parentId: string): Promise<Child[]> => {
+export const getChildrenByParentId = async (
+  parentId: string
+): Promise<Child[]> => {
   try {
-    const q = query(collection(db, 'children'), where('parentIds', 'array-contains', parentId));
+    const q = query(
+      collection(db, 'children'),
+      where('parentIds', 'array-contains', parentId)
+    );
     const childrenSnapshot = await getDocs(q);
-    return childrenSnapshot.docs.map((doc) => {
+    return childrenSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -105,7 +110,9 @@ export const getChildrenByParentId = async (parentId: string): Promise<Child[]> 
 /**
  * Create a new child
  */
-export const createChild = async (childData: Omit<Child, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+export const createChild = async (
+  childData: Omit<Child, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<string> => {
   try {
     const childRef = doc(collection(db, 'children'));
     await setDoc(childRef, {
@@ -124,7 +131,10 @@ export const createChild = async (childData: Omit<Child, 'id' | 'createdAt' | 'u
 /**
  * Update a child
  */
-export const updateChild = async (childId: string, updates: Partial<Child>): Promise<void> => {
+export const updateChild = async (
+  childId: string,
+  updates: Partial<Child>
+): Promise<void> => {
   try {
     const updateData: any = {
       ...updates,
@@ -157,4 +167,3 @@ export const deleteChild = async (childId: string): Promise<void> => {
     throw error;
   }
 };
-

@@ -4,12 +4,15 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
-import { getAllChildren, getChildrenByParentId } from '../../services/database/childService';
+import {
+  getAllChildren,
+  getChildrenByParentId,
+  getChildById,
+} from '../../services/database/childService';
 import { checkOutChild } from '../../services/database/checkInOutService';
 import { Child } from '../../types';
 import { Button } from '../../components/common/Button';
@@ -17,6 +20,7 @@ import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
 import { Spacing, FontSizes } from '../../constants/sizes';
 import { getChildFullName } from '../../utils/helpers';
+import './CheckOutScreen.css';
 
 export const CheckOutScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -51,21 +55,17 @@ export const CheckOutScreen: React.FC = () => {
 
   const handleCheckOut = async () => {
     if (!selectedChildId || !user) {
-      Alert.alert(t('common.error'), 'Velg et barn');
+      alert('Velg et barn');
       return;
     }
 
     // Validation: Check if child is checked in
     try {
-      const { getChildById } = await import('../../services/database/childService');
       const child = await getChildById(selectedChildId);
       if (child) {
         const status = (child as any).status;
         if (status !== 'checked_in') {
-          Alert.alert(
-            t('common.error'),
-            'Barnet må være krysset inn før det kan krysses ut'
-          );
+          alert('Barnet må være krysset inn før det kan krysses ut');
           return;
         }
       }
@@ -76,100 +76,94 @@ export const CheckOutScreen: React.FC = () => {
     setLoading(true);
     try {
       await checkOutChild(selectedChildId, user.id, notes);
-      Alert.alert(t('common.success'), t('child.checkOut') + ' vellykket');
+      alert(t('child.checkOut') + ' vellykket');
       setNotes('');
       // Refresh children list
       await loadChildren();
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke krysse ut');
+      alert(error.message || 'Kunne ikke krysse ut');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {t('child.checkOut')}
-        </Text>
-
-        {user?.role === UserRole.STAFF && (
-          <View style={styles.childSelection}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              {t('child.children')}
-            </Text>
-            {children.map((child) => (
-              <Card
-                key={child.id}
-                style={[
-                  styles.childCard,
-                  selectedChildId === child.id && { borderColor: colors.primary, borderWidth: 2 },
-                ]}
-                onPress={() => setSelectedChildId(child.id)}
-              >
-                <Text style={[styles.childName, { color: colors.text }]}>
-                  {getChildFullName(child)}
-                </Text>
-              </Card>
-            ))}
-          </View>
-        )}
-
-        {selectedChildId && (
-          <>
-            <Input
-              label={t('child.notes')}
-              value={notes}
-              onChangeText={setNotes}
-              placeholder={t('child.notes')}
-              multiline
-              numberOfLines={3}
-            />
-
-            <Button
-              title={t('child.checkOut')}
-              onPress={handleCheckOut}
-              loading={loading}
-              style={styles.button}
-            />
-          </>
-        )}
-      </View>
-    </ScrollView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
+  const containerStyle: React.CSSProperties = {
     padding: Spacing.md,
-  },
-  title: {
+    backgroundColor: colors.background,
+    minHeight: '100vh',
+    overflowY: 'auto',
+  };
+
+  const titleStyle: React.CSSProperties = {
     fontSize: FontSizes.xxl,
-    fontWeight: '700',
+    fontWeight: 700,
     marginBottom: Spacing.lg,
     letterSpacing: -0.3,
     lineHeight: FontSizes.xxl * 1.2,
-  },
-  childSelection: {
-    marginBottom: Spacing.md,
-  },
-  label: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-  },
-  childCard: {
-    marginBottom: Spacing.sm,
-  },
-  childName: {
-    fontSize: FontSizes.md,
-  },
-  button: {
-    marginTop: Spacing.md,
-  },
-});
+    color: colors.text,
+    margin: 0,
+  };
 
+  const labelStyle: React.CSSProperties = {
+    fontSize: FontSizes.md,
+    fontWeight: 600,
+    marginBottom: Spacing.sm,
+    color: colors.text,
+  };
+
+  return (
+    <div style={containerStyle}>
+      <h1 style={titleStyle}>{t('child.checkOut')}</h1>
+
+      {user?.role === UserRole.STAFF && (
+        <div style={{ marginBottom: Spacing.md }}>
+          <p style={labelStyle}>{t('child.children')}</p>
+          {children.map(child => (
+            <Card
+              key={child.id}
+              onPress={() => setSelectedChildId(child.id)}
+              style={{
+                marginBottom: Spacing.sm,
+                ...(selectedChildId === child.id && {
+                  borderColor: colors.primary,
+                  borderWidth: 2,
+                  borderStyle: 'solid',
+                }),
+              }}
+            >
+              <p
+                style={{
+                  fontSize: FontSizes.md,
+                  color: colors.text,
+                  margin: 0,
+                }}
+              >
+                {getChildFullName(child)}
+              </p>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {selectedChildId && (
+        <>
+          <Input
+            label={t('child.notes')}
+            value={notes}
+            onChangeText={setNotes}
+            placeholder={t('child.notes')}
+            multiline
+            numberOfLines={3}
+          />
+
+          <Button
+            title={t('child.checkOut')}
+            onPress={handleCheckOut}
+            loading={loading}
+            style={{ marginTop: Spacing.md, width: '100%' }}
+          />
+        </>
+      )}
+    </div>
+  );
+};

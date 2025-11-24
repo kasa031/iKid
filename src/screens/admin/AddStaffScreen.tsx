@@ -4,7 +4,6 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { register } from '../../services/auth/authService';
@@ -12,7 +11,12 @@ import { UserRole } from '../../types';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Spacing, FontSizes } from '../../constants/sizes';
-import { isValidEmail, isValidPassword, isRequired } from '../../utils/validation';
+import {
+  isValidEmail,
+  isValidPassword,
+  isRequired,
+} from '../../utils/validation';
+import './AddStaffScreen.css';
 
 export const AddStaffScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -41,7 +45,7 @@ export const AddStaffScreen: React.FC = () => {
     if (!isRequired(password)) {
       newErrors.password = t('auth.password') + ' er påkrevd';
     } else if (!isValidPassword(password)) {
-      newErrors.password = 'Passord må være minst 8 tegn';
+      newErrors.password = 'Passord må være minst 12 tegn med stor/liten bokstav, tall og spesialtegn';
     }
 
     if (password !== confirmPassword) {
@@ -66,7 +70,7 @@ export const AddStaffScreen: React.FC = () => {
         UserRole.STAFF,
         phone.trim() || undefined
       );
-      Alert.alert(t('common.success'), 'Ansatt lagt til');
+      window.alert(t('common.success') + ': Ansatt lagt til');
       // Reset form
       setName('');
       setEmail('');
@@ -74,18 +78,39 @@ export const AddStaffScreen: React.FC = () => {
       setConfirmPassword('');
       setPhone('');
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke legge til ansatt');
+      window.alert(t('common.error') + ': ' + (error.message || 'Kunne ikke legge til ansatt'));
     } finally {
       setLoading(false);
     }
   };
 
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    backgroundColor: colors.background,
+    padding: Spacing.md,
+    overflowY: 'auto',
+  };
+
+  const contentStyle: React.CSSProperties = {
+    maxWidth: 800,
+    margin: '0 auto',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: FontSizes.xxl,
+    fontWeight: 700,
+    marginBottom: Spacing.lg,
+    letterSpacing: -0.3,
+    lineHeight: FontSizes.xxl * 1.2,
+    color: colors.text,
+  };
+
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
+    <div style={containerStyle} className="add-staff-screen">
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>
           {t('admin.addStaff')}
-        </Text>
+        </h1>
 
         <Input
           label="Navn"
@@ -131,29 +156,9 @@ export const AddStaffScreen: React.FC = () => {
           title={t('common.save')}
           onPress={handleSave}
           loading={loading}
-          style={styles.button}
+          style={{ marginTop: Spacing.md, width: '100%' }}
         />
-      </View>
-    </ScrollView>
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: Spacing.md,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    marginBottom: Spacing.lg,
-    letterSpacing: -0.3,
-    lineHeight: FontSizes.xxl * 1.2,
-  },
-  button: {
-    marginTop: Spacing.md,
-  },
-});
-

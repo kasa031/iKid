@@ -6,7 +6,7 @@
 import {
   collection,
   doc,
-  getDoc,
+  // getDoc, // Unused
   getDocs,
   setDoc,
   updateDoc,
@@ -26,7 +26,7 @@ export const getAllEvents = async (): Promise<CalendarEvent[]> => {
   try {
     const q = query(collection(db, 'calendarEvents'), orderBy('date', 'asc'));
     const eventsSnapshot = await getDocs(q);
-    return eventsSnapshot.docs.map((doc) => {
+    return eventsSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -60,7 +60,7 @@ export const getEventsByDateRange = async (
       orderBy('date', 'asc')
     );
     const eventsSnapshot = await getDocs(q);
-    return eventsSnapshot.docs.map((doc) => {
+    return eventsSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -139,4 +139,3 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
     throw error;
   }
 };
-

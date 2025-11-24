@@ -1,5 +1,18 @@
-# Firebase config (sensitive data)
+# Firebase config (sensitive data) - CRITICAL: Never commit this file!
 src/services/firebase/config.ts
+
+# All environment files with secrets
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+*.env
+*.env.*
+
+# Firebase documentation with sensitive data
+FIREBASE_QUICK_CHECK.md
+FIREBASE_CONFIG_FORKLARING.md
 
 # OSX
 .DS_Store
@@ -27,6 +40,9 @@ DerivedData
 build/
 .idea
 .gradle
+.settings
+.project
+.classpath
 local.properties
 *.iml
 *.hprof

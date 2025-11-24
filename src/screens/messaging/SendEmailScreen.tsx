@@ -4,11 +4,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { getAllChildren, getChildrenByParentId } from '../../services/database/childService';
+import { getAllChildren } from '../../services/database/childService';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase/config';
 import { Child } from '../../types';
@@ -19,6 +18,7 @@ import { Spacing, FontSizes } from '../../constants/sizes';
 import { sendEmail } from '../../utils/messaging';
 import { isValidEmail } from '../../utils/validation';
 import { getChildFullName } from '../../utils/helpers';
+import './SendEmailScreen.css';
 
 export const SendEmailScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -64,9 +64,9 @@ export const SendEmailScreen: React.FC = () => {
     }
 
     // Get parent email from child
-    const child = children.find((c) => c.id === selectedChildId);
+    const child = children.find(c => c.id === selectedChildId);
     if (!child || child.parentIds.length === 0) {
-      Alert.alert(t('common.error'), 'Ingen foreldre funnet for dette barnet');
+      window.alert(t('common.error') + ': Ingen foreldre funnet for dette barnet');
       return;
     }
 
@@ -75,53 +75,79 @@ export const SendEmailScreen: React.FC = () => {
       const firstParentId = child.parentIds[0];
       const parentDoc = await getDoc(doc(db, 'users', firstParentId));
       if (!parentDoc.exists()) {
-        Alert.alert(t('common.error'), 'Foreldre ikke funnet');
+        window.alert(t('common.error') + ': Foreldre ikke funnet');
         return;
       }
       const parentData = parentDoc.data();
       const parentEmail = parentData.email;
 
       if (!isValidEmail(parentEmail)) {
-        Alert.alert(t('common.error'), 'Ugyldig e-postadresse');
+        window.alert(t('common.error') + ': Ugyldig e-postadresse');
         return;
       }
 
       await sendEmail(parentEmail, subject, message);
-      Alert.alert(t('common.success'), 'E-post åpnet');
+      window.alert(t('common.success') + ': E-post åpnet');
       setSubject('');
       setMessage('');
       setSelectedChildId(null);
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || 'Kunne ikke sende e-post');
+      window.alert(t('common.error') + ': ' + (error.message || 'Kunne ikke sende e-post'));
     }
   };
 
-  return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {t('messages.sendEmail')}
-        </Text>
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    backgroundColor: colors.background,
+    padding: Spacing.md,
+    overflowY: 'auto',
+  };
 
-        <View style={styles.childSelection}>
-          <Text style={[styles.label, { color: colors.text }]}>
+  const contentStyle: React.CSSProperties = {
+    maxWidth: 800,
+    margin: '0 auto',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: FontSizes.xxl,
+    fontWeight: 700,
+    marginBottom: Spacing.lg,
+    letterSpacing: -0.3,
+    lineHeight: FontSizes.xxl * 1.2,
+    color: colors.text,
+  };
+
+  return (
+    <div style={containerStyle} className="send-email-screen">
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>
+          {t('messages.sendEmail')}
+        </h1>
+
+        <div style={{ marginBottom: Spacing.md }}>
+          <label style={{ fontSize: FontSizes.md, fontWeight: 600, marginBottom: Spacing.sm, color: colors.text, display: 'block' }}>
             {t('child.children')}
-          </Text>
-          {children.map((child) => (
+          </label>
+          {children.map(child => (
             <Card
               key={child.id}
-              style={[
-                styles.childCard,
-                selectedChildId === child.id && { borderColor: colors.primary, borderWidth: 2 },
-              ]}
+              style={{
+                marginBottom: Spacing.sm,
+                cursor: 'pointer',
+                ...(selectedChildId === child.id && {
+                  borderColor: colors.primary,
+                  borderWidth: 2,
+                  borderStyle: 'solid',
+                }),
+              }}
               onPress={() => setSelectedChildId(child.id)}
             >
-              <Text style={[styles.childName, { color: colors.text }]}>
+              <p style={{ fontSize: FontSizes.md, color: colors.text, margin: 0 }}>
                 {getChildFullName(child)}
-              </Text>
+              </p>
             </Card>
           ))}
-        </View>
+        </div>
 
         <Input
           label={t('messages.subject')}
@@ -142,43 +168,9 @@ export const SendEmailScreen: React.FC = () => {
         <Button
           title={t('messages.send')}
           onPress={handleSendEmail}
-          style={styles.button}
+          style={{ marginTop: Spacing.md, width: '100%' }}
         />
-      </View>
-    </ScrollView>
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: Spacing.md,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    marginBottom: Spacing.lg,
-    letterSpacing: -0.3,
-    lineHeight: FontSizes.xxl * 1.2,
-  },
-  childSelection: {
-    marginBottom: Spacing.md,
-  },
-  label: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-  },
-  childCard: {
-    marginBottom: Spacing.sm,
-  },
-  childName: {
-    fontSize: FontSizes.md,
-  },
-  button: {
-    marginTop: Spacing.md,
-  },
-});
-

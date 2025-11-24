@@ -1,172 +1,86 @@
-# iKid - Digital inn- og utkryssing for barnehager
+# iKid - Eventyrhagen Barnehage
 
-iKid er en React Native-applikasjon designet for barnehagen "Eventyrhagen Barnehage" for å erstatte det gamle Excel-baserte systemet for inn- og utkryssing av barn. Applikasjonen er bygget med fokus på GDPR-compliance, sikkerhet og brukervennlighet.
+Digital inn- og utkryssing for barnehager - En moderne webapp bygget med React, TypeScript og Firebase.
 
-## Funksjoner
-
-### For foreldre
-- Inn- og utkryssing av egne barn
-- Oversikt over barnets status
-- Visning av barnets profil og informasjon
-- Flerspråklig støtte (norsk, engelsk, polsk)
-- Dark/light mode
-
-### For ansatte
-- Inn- og utkryssing av alle barn
-- Oversikt over alle barn og deres status
-- Logger for inn/utkryssinger
-- Kalender med viktige hendelser
-- Send e-post til foresatte
-- Administrasjon av barn-profiler
-
-### Sikkerhet og personvern
-- GDPR-compliant datalagring (EØS-land)
-- Rollebasert tilgangskontroll
-- Kryptert datatransport
-- Sikker passordhåndtering
-- Automatisk logging av alle handlinger
-
-## Teknologistack
-
-- **React Native** - Kryssplattform mobilutvikling
-- **TypeScript** - Type-sikkerhet
-- **Firebase** - Backend, autentisering og database
-- **i18next** - Flerspråklig støtte
-- **React Navigation** - Navigasjon
-
-## Rask start
-
-For å komme i gang raskt, se `QUICK_START.md`.
-
-For systematisk testing, se `TESTING_GUIDE.md`.
-
-## Prosjektoppsett
+## 🚀 Kom i gang
 
 ### Forutsetninger
-- Node.js (v14 eller nyere)
-- npm eller yarn
-- React Native CLI
-- Android Studio (for Android-utvikling)
-- Xcode (for iOS-utvikling, kun macOS)
+
+- Node.js 18+ og npm
+- Firebase-prosjekt (se [Firebase Setup](./docs/setup/FIREBASE_SETUP.md))
 
 ### Installasjon
 
-1. Klon repositoriet:
 ```bash
-git clone <repository-url>
-cd iKid
-```
-
-2. Installer avhengigheter:
-```bash
+# Installer avhengigheter
 npm install
+
+# Start utviklingsserver
+npm run dev
+
+# Bygg for produksjon
+npm run build
+
+# Forhåndsvis produksjonsbygget
+npm run preview
 ```
 
-3. Konfigurer Firebase:
-   - Opprett et Firebase-prosjekt
-   - Kopier Firebase-konfigurasjonen til `src/services/firebase/config.ts`
-   - Sørg for at Firebase-prosjektet er konfigurert for EØS-region
+## 📱 PWA (Progressive Web App)
 
-4. Start Metro bundler:
-```bash
-npm start
-```
+Appen kan installeres på hjemskjermen som en PWA. Se [PWA Installasjonsguide](./PWA_INSTALLASJON.md) for detaljer.
 
-5. Kjør appen:
-```bash
-# For Android
-npm run android
+## 📚 Dokumentasjon
 
-# For iOS
-npm run ios
-```
+- [Firebase Setup](./docs/setup/FIREBASE_SETUP.md) - Komplett Firebase-oppsett
+- [PWA Installasjon](./PWA_INSTALLASJON.md) - Installer appen på hjemskjermen
+- [Deployment](./docs/DEPLOYMENT.md) - Deploy til produksjon
+- [Sikkerhet](./docs/SECURITY.md) - Sikkerhetsretningslinjer
+- [GDPR](./docs/GDPR.md) - Personvern og GDPR
+- [Brukerhåndbok](./docs/USER_MANUAL.md) - Brukerguide
 
-## Prosjektstruktur
+## 🛠️ Teknologi
+
+- **Frontend**: React 19, TypeScript, Vite
+- **Routing**: React Router v7
+- **Styling**: CSS Modules
+- **Backend**: Firebase (Authentication, Firestore, Storage)
+- **Internasjonalisering**: i18next
+- **PWA**: vite-plugin-pwa
+
+## 📁 Prosjektstruktur
 
 ```
 iKid/
+├── public/              # Statiske filer og PWA-assets
 ├── src/
 │   ├── components/      # Gjenbrukbare komponenter
-│   ├── screens/         # Skjermkomponenter
-│   ├── services/         # Backend-tjenester
-│   ├── navigation/      # Navigasjonskonfigurasjon
-│   ├── context/         # React Context providers
-│   ├── utils/           # Hjelpefunksjoner
-│   ├── types/           # TypeScript type-definisjoner
-│   ├── constants/       # Konstanter (farger, størrelser)
-│   └── i18n/            # Språkfiler
-├── package.json
-├── tsconfig.json
-└── README.md
+│   ├── screens/        # Skjermkomponenter
+│   ├── navigation/     # Routing og navigasjon
+│   ├── services/       # API og Firebase-tjenester
+│   ├── context/        # React Context providers
+│   ├── hooks/          # Custom React hooks
+│   ├── utils/          # Hjelpefunksjoner
+│   ├── constants/      # Konstantverdier
+│   ├── types/          # TypeScript typer
+│   └── i18n/           # Oversettelser
+├── docs/               # Dokumentasjon
+└── scripts/            # Build scripts
 ```
 
-## Database-struktur
+## 🔒 Sikkerhet
 
-### Collections
+- Passord hashing via Firebase
+- Rollebasert tilgangskontroll
+- GDPR-kompatibel datalagring
+- Datalagring innenfor EØS
 
-- **users** - Brukerdata (foreldre og ansatte)
-- **children** - Barn-profiler
-- **checkInOutLogs** - Logger for inn/utkryssinger
-- **calendarEvents** - Kalenderoppføringer
+## 🌍 Språkstøtte
 
-## Sikkerhet
+Appen støtter:
+- Norsk (no)
+- Engelsk (en)
+- Polsk (pl)
 
-- All data lagres i EØS-land (GDPR-compliance)
-- Passord hashes med Firebase Authentication
-- Rollebasert tilgangskontroll implementert
-- Firestore Security Rules for datatilgang
-- Kryptert datatransport (HTTPS)
-
-## Utvikling
-
-### Kodekvalitet
-- ESLint for kodekvalitet
-- Prettier for kodeformatering
-- TypeScript for type-sikkerhet
-
-### Testing
-```bash
-npm test
-```
-
-### Linting
-```bash
-npm run lint
-npm run lint:fix
-```
-
-### Formatering
-```bash
-npm run format
-```
-
-## Deployment
-
-### Android
-1. Bygg release APK:
-```bash
-cd android
-./gradlew assembleRelease
-```
-
-### iOS
-1. Åpne prosjektet i Xcode
-2. Velg "Archive" for produksjonsbygget
-
-## Dokumentasjon
-
-Se `docs/` mappen for detaljert dokumentasjon om:
-- Database-struktur
-- API-endepunkter
-- Rollebasert tilgang
-- GDPR-compliance
-- Brukermanual
-
-## Lisens
+## 📝 Lisens
 
 ISC
-
-## Kontakt
-
-For spørsmål eller support, kontakt utviklingsteamet.
-
